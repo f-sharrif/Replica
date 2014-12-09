@@ -1,0 +1,14 @@
+{"simplex": {
+    "screenshot": "simplex.png",
+    "templates": {
+        "default": "default.php",
+        "Full Width": "full-width.php",
+        "Right Sidebar": "right-column.php",
+        "Left Sidebar" : "left-column.php"
+    },
+    "Default_navigation": {
+        "Home": "/",
+        "About Us": "/about-us.html",
+        "Web Development": "/services/web-development.html"
+    }
+}} 

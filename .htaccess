@@ -1,0 +1,9 @@
+RewriteEngine On
+
+
+#TO DISALLOW DIRECTORY BROWSING COMMENT OUT THIS LINE
+#RewriteCond %{REQUEST_FILENAME} !-d
+
+RewriteCond %{REQUEST_FILENAME} !-f
+
+RewriteRule ^(.+)$ index.php?replica_uri=$1 [QSA,L]
