@@ -12,7 +12,7 @@ if(!defined('REPLICA')) {die('Sorry direct access to this file not allowed');}
     <meta name="keywords"    contents="<?=@Replica::escape($meta_keywords);?>">
     <meta name="viewport"    content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" href="http://sharif.co/favicon.ico">
-    <?=Replica::assets_get('css',['css/styles.css']); ?>
+    <?=Replica::assets_load('css',['css/bootstrap.min.css','css/styles.css','css/color.css']); ?>
 </head>
 <body>
 <div class="wrapper center-text">

@@ -11,15 +11,14 @@ class Replica
     | @var $_page: holds default page to load if no page is requested
     | @var $_template: holds the current template directory for the page
     | @var $_template_data = collect data assigned via magic __set() method
-    |
+    | @var $_request_exists = flags whether the request resource exists or not
     |
     */
 
     private $_page = 'index',
             $_template = "",
-            $_template_data = [];
-
-
+            $_template_data = [],
+            $_request_exists = false;
 
     /*
     |--------------------------------------------------------------------------
@@ -86,30 +85,12 @@ class Replica
        | DEFINED ALL THE CORE CONSTANTS
        |--------------------------------------------------------------------------
        |
-       |    Define list of core constants that are needed to connect the system
+       |    Define list of core constants that are needed to interconnect the system
        |
        */
 
-        //Core
-        if(!defined('REPLICA'))         define('REPLICA', self::get_system('state'));
-        if(!defined('REPLICA_VERSION')) define('REPLICA_VERSION', self::get_system('version'));
-
-        //System
-        if(!defined('CORE_DIR'))        define('CORE_DIR', REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_CORE_DIR) . DS);
-        if(!defined('ASSETS_DIR'))      define('ASSETS_DIR', REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_ASSETS_DIR) . DS);
-        if(!defined('DATA_DIR'))        define('DATA_DIR', REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS);
-        if(!defined('MODULES_DIR'))     define('MODULES_DIR', REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_DIR) . DS);
-
-
-        //Data
-        if(!defined('PAGES'))           define('PAGES', DATA_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_PAGES_DIR) . DS);
-        if(!defined('NAV'))             define('NAV', DATA_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_NAV_DIR) . DS);
-        if(!defined('WIDGETS'))         define('WIDGETS', DATA_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_WIDGETS_DIR) . DS);
-
-        //Public
-        if(!defined('PUBLIC_ROOT'))     define('PUBLIC_ROOT', self::get_base_uri());
-        if(!defined('PUBLIC_ASSETS'))   define('PUBLIC_ASSETS', PUBLIC_ROOT . self::_whitespace_slashes(REPLICA_CUSTOM_ASSETS_DIR) . '/');
-
+        //If this Constant is not defined the system will not render pages, do not remove
+        if(!defined('REPLICA'))         define('REPLICA', self::get_system('system_state'));
 
       /*
       |--------------------------------------------------------------------------
@@ -119,7 +100,7 @@ class Replica
       |    If the debug mode is set to true, get all possible errors shown
       |
       */
-        if (REPLICA_DEBUG_MODE) {
+        if (self::get_system('debug_mode')) {
 
             //Set Error Display
             ini_set('display_errors', 'On');
@@ -175,6 +156,22 @@ class Replica
 
             $old_error_handler = set_error_handler("ErrorHandler");
 
+            //Show debug bar
+            echo "<div style='width:100%;  overflow: hidden; color: #fff; height: 25px; padding: 5px; margin-bottom: 45px; background-color:#e74c3c; position: absolute; top:0; left: 0;'> <strong style='color: #fff; padding-right: 5px; border-right: 1px solid #fff;'> DEBUG MODE</strong>";
+
+                //Show link to system configuration
+                if(self::input('get','debug')!="show_system_config_settings")
+                {
+                    echo "<a href='?debug=show_system_config_settings' style='text-decoration: none; color:#fff; font-size: 12px; text-align: right; padding: 20px; position: relative'> Show System Configuration Settings</a>";
+                }
+
+            echo "</div>";
+
+            //Show system configuration
+            if(!is_null(self::input('get','debug')) && self::input('get','debug')=='show_system_config_settings')
+            {
+                self::dd(self::_system_configuration_settings());
+            }
 
         }
 
@@ -209,20 +206,20 @@ class Replica
     {
 
         //Set the default page title if no title is defined in the data
-        $this->title = REPLICA_DEFAULT_SITE_NAME;
+        $this->title = self::get_system('meta_title');
 
         //Set the default page meta description if no meta description is defined in the data
-        $this->meta_description = REPLICA_DEFAULT_SITE_DESCRIPTION;
+        $this->meta_description = self::get_system('meta_desc');
 
         //Set default page keywords is no meta keywords are defined in the data
-        $this->meta_keywords = REPLICA_DEFAULT_SITE_KEYWORDS;
+        $this->meta_keywords = self::get_system('meta_tags');
 
 
         $data = self::_include_file($this->route() . EXT);
 
         //check to see if the page uses special template
 
-        $user_page_template = isset($data['template']) ? $data['template'] : null;
+        $custom_page_template = isset($data['template']) ? $data['template'] : null;
 
 
         //Send each variable in the page to the template
@@ -232,169 +229,111 @@ class Replica
 
         //Generate the view
 
-        return $this->make($user_page_template);
+        return $this->make($custom_page_template);
 
     }
 
     /*
     |--------------------------------------------------------------------------
-    | Route method
+    | Route();
     |--------------------------------------------------------------------------
     |
-    | Prepares the uri
+    | The route method is perhaps on of the most important method in Replica, it
+    | analysis the uri collections, verifies the existence of the requested resources,
+    | and throwing in error when no resources in found with the requested uri
     |
     */
 
-
-    /**
-     * @return bool|string
-     */
     private function route()
     {
-        //Default page value
+        //assign the page location to its default setting
+        $this->_page = self::get_system('path_to_pages_dir').$this->_page;
 
-        $this->_page = PAGES . $this->_page;
+        // Uri collections
 
-        //Get the URI Array Values
-        $url = $this->_parse_uri_collections();
+        $ur =$this->_parse_uri_collections();
 
+        //Check to see if we have at least one uri other than index is requested
+        if(count($ur)>=1 && $ur[0]!="")
+        {
 
-        //Confirm that there is at array index
-        if (count($url) >= 1) {
-            //Check to see if the first option set is directory if it is than check second option for being a file
-            if (self::_is_dir(PAGES . $url[0])) {
+            //Declare empty variable to assign the processed request bits
+            $request='';
 
-                //Check to see if url one is setup
-                if (isset($url[1])) {
+            //Loop through everything in the $uri collection
+            for($i=0; $i<count($ur); $i++)
+            {
 
-                    //If it is setup explode by page extension
-                    $eval_page_request = explode('.', self::_whitespace_slashes($url[1]));
+                //Check to see if the current iterant is the last in the collection
+                if($i+1 == count($ur))
+                 {
 
-                    //Make sure the exploded var is two part file and extension
-                    if (count($eval_page_request) == 2) {
+                 //Since this is the last in the collection, we know its a page ans there is possibility it might have extension
+                   $page_eval = explode('.', self::_whitespace_slashes($ur[$i]));
 
-                        //Assign parts to a variables
-                        $final_page = $eval_page_request[0];
-                        $extension = $eval_page_request[1];
+                 //lets check if has exploded into name and extension
+                   if(count($page_eval)==2)
+                   {
+                       //Assign the send part as extension
+                       $request_extension = $page_eval[1];
 
-                        //Test to see if evaluated extension is equal to one in config
-                        if ($extension != REPLICA_PAGE_EXTENSION)
+                       //The first part as the request file
+                        $request_final     = $page_eval[0];
 
-                            //If the extension is not the same, this has happened in error send to 404
-                            unset($url[1]);
-                        else
+                       //Evaluate to see if the extension is the same as the Replica Page Extension configured in the settings
+                       if(strtolower($request_extension)===self::get_system('page_extension'))
+                       {
+                           //If it evaluated correctly process the file according to this
+                           $request.=DS.$request_final;
+                       }
 
-                            //If the extension is the same as what is in config while than assign the file to the variable
-                            $url[1] = $final_page;
-                    }
+                   }else
+                   {
+                       //Otherwise, there was no extension therefore just process as is
+                       $request.=DS.$ur[$i];
+                   }
 
-                }
+               }elseif($i==0)
+               {
+                   //If the request collections are more than one, get the first one and process separately
+                       $request.=$ur[$i];
+               }else
+               {
+                   //Process everything else with proper os directory separator in between
+                   $request.=DS.$ur[$i];
+               }
 
-                //Set up the file to check
-                $file = isset($url[0]) && isset($url[1]) ? PAGES . $url[0] . DS . $url[1] : PAGES . $url[0];
-
-
-                //Since the first Index or the URI array is also a directory check is second index is set
-                if (self::_check_file($file . EXT)) {
-
-                    //Tested and confirmed assign the file to default page
-                    $this->_page = $file;
-
-                    //Unset the found file from the array list
-                    unset($url[1]);
-
-                    //Also since a file is found unset the first array index as well
-                    unset($url[0]);
-                }
 
             }
 
+            //At this point we have our request file set and its time to evaluate for its existence
+            if(self::_check_file(self::get_system('path_to_pages_dir').$request.EXT))
+            {
+                //Now it exists, lets turn on the flag that we have found our request
+                $this->_request_exists = true;
 
-            /*
-            |--------------------------------------------------------------------------
-            |       ERROR HAS OCCURRED
-            |--------------------------------------------------------------------------
-            |       THROW ERROR 404
-            | THE SHOULD BE NO $URL[1] HERE
-            |
-            */
+                //Assign the page to the page
+                $this->_page = self::get_system('path_to_pages_dir').$request;
+            }
 
-            if (isset($url[1]))
+            //Verify that the flag for page found is turned on and if not
+            if(!$this->_request_exists && $request!='')
+            {
+                //Check to see if this request a subdirectory of the root directory
+                if(self::_is_dir(self::get_system('path_to_root_dir').self::_whitespace_slashes($request)))
+                {
+                    //If it is directory, then set a global flag * for assets to load properly via auto_dumper
+                    define('AT_403_ON_DIR', true);
+
+                    //Redirect user to 403 error and update http headers
+                    return self::Redirect_to(403);
+                }
+
+                //If the request is not directory, it's now obvious that the resource doesn't exist so Redirect to 404
                 return self::Redirect_to(404);
-
-
-            //Check to see if the URL[0] is still set
-
-            if (isset($url[0])) {
-
-                //If it is setup explode by page extension
-                $eval_page_request = explode('.', self::_whitespace_slashes($url[0]));
-
-                //Make sure the exploded var is two part file and extension
-                if (count($eval_page_request) == 2) {
-
-                    //Assign parts to a variables
-                    $final_page = $eval_page_request[0];
-                    $extension = $eval_page_request[1];
-
-                    //Test to see if evaluated extension is equal to one in config
-                    if ($extension == REPLICA_PAGE_EXTENSION) {
-                        //If the extension is the same as what is in config while than assign the file to the variable
-                        $url[0] = $final_page;
-                    }
-
-
-                }
-
-
-                //We have learned url index 0 still set, lets check if this is a file
-                $file = PAGES . $url[0];
-
-                //Check for a existing and readable file
-                if (self::_check_file($file . EXT)) {
-
-                    //If found a result assign the default page index 0
-                    $this->_page = $file;
-
-                    //Unset index 0 in case we would like to do more checking in the future
-                    unset($url[0]);
-                }
-
-            }
-
-
-            /*
-            |--------------------------------------------------------------------------
-            |       ERROR HAS OCCURRED
-            |--------------------------------------------------------------------------
-            |           THROW ERROR 404
-            |   THE SHOULD BE NO $URL[0] HERE
-            |
-            */
-
-            if (isset($url[0])) {
-
-                // Only throw in the 404 error when the $url[0] is not empty
-                //  Otherwise continue with default page
-
-                if (!empty($url[0])) {
-
-                    if (self::_is_dir(REPLICA_ROOT_DIR . $url[0])) {
-                        define('AT_403_ON_DIR', true);
-
-                        return self::Redirect_to(403);
-                    }
-
-                    return self::Redirect_to(404);
-                }
-
-
-                //Terminate the url[0] here and continue with default page
-                unset($url[0]);
             }
 
         }
-
 
         /*
         |--------------------------------------------------------------------------
@@ -405,12 +344,10 @@ class Replica
         | extension to the dispatch to be processed.
         |
         */
+
         return $this->_page;
 
     }
-
-    
-
 
 
     /*
@@ -430,11 +367,11 @@ class Replica
     {
 
         //Initiate the template directory
-        $template_dir = $this->_is_theme_dir(ASSETS_DIR . REPLICA_THEME.DS) ? REPLICA_THEME : 'default';
+        $template_dir = $this->_is_theme_dir(self::get_system('path_to_assets_dir') . self::get_system('theme').DS) ? self::get_system('theme') : 'default';
 
         //template to be used
 
-        $this->_template = ASSETS_DIR . $template_dir . DS;
+        $this->_template = self::get_system('path_to_assets_dir') . $template_dir . DS;
 
         //Theme name used to grab only the name
         define('CURRENT_THEME_NAME', $template_dir);
@@ -449,21 +386,27 @@ class Replica
             $this->$theme_config = $theme_config;
         }
 
-        // Send variable to the template
+        // Collect all the various assigned variables to the view or template and make it available
 
         foreach ($this->_template_data as $data => $value) {
             $$data = $value;
         }
 
+        //Check to see if specific template is requested
         if ($path) {
 
+            //If the request is for specific template, check to see if it exists
             if (self::_check_file($this->_template . $path . EXT)) {
 
+                //If the requested template exist render that view and complete the task
                 return require_once $this->_template . $path . EXT;
             }
         }
 
-        return require_once $this->_template . 'default' . EXT;
+        //If the requested template doesn't exist or there was no template requested than
+        //render the default theme template by default.
+
+        return require_once $this->_template . self::get_system('theme_index');
 
     }
 
@@ -543,7 +486,10 @@ class Replica
     | _query_string()
     |--------------------------------------------------------------------------
     |
-    | Returns the uri query string
+    | Returns the uri query string, this method is needed to properly load
+    | the assets into their relative path. Modification of this method can
+    | break the linkage to stylesheet and javascript
+    | if assets are loaded via Replica::asset_load() aka assets auto_dumper
     |
     */
 
@@ -552,11 +498,18 @@ class Replica
      */
     private static function _query_string()
     {
-        $url = filter_var(rtrim($_SERVER['QUERY_STRING'], '/'), FILTER_SANITIZE_URL);
+        //Get the query string
+        $url = filter_var($_SERVER['QUERY_STRING'], FILTER_SANITIZE_URL);
+
+        //Explode the query string at the equal sign
         $qs = explode('=', $url);
-        if (count($qs) == 2)
+
+        //If exploded properly there should me more than one in $qs count
+        if (count($qs) > 1)
+            //now explode the second one by the slash as we only need the second one and the rest will be discarded
             return explode('/', $qs[1]);
         else
+            //if there aren't any then just return empty array
             return [];
     }
 
@@ -600,13 +553,33 @@ class Replica
 
         $replica_required_theme_contents =
             [
-                self::_whitespace_slashes(REPLICA_THEME_DEFAULT_INDEX).EXT,
-                self::_whitespace_slashes(REPLICA_THEME_CSS_DIR),
-                self::_whitespace_slashes(REPLICA_THEME_JS_DIR),
-                self::_whitespace_slashes(REPLICA_THEME_IMG_DIR),
-                self::_whitespace_slashes(REPLICA_THEME_CSS_DIR).DS.self::_whitespace_slashes(REPLICA_THEME_DEFAULT_CSS_FILE).'.css',
-                self::_whitespace_slashes(REPLICA_THEME_ERRORS_TEMPLATE).EXT,
-                self::_whitespace_slashes(REPLICA_THEME_PARTIAL_DIR)
+               //The theme must have default page as defined in index.php
+
+                self::get_system('theme_index'),       // REPLICA_THEME_DEFAULT_INDEX
+
+               //CSS directory must be present as defined in index.php
+
+                self::get_system('theme_css_dir'),     //  REPLICA_THEME_CSS_DIR
+
+                //JS directory must be present as defined in index.php
+
+                self::get_system('theme_js_dir'),     //  REPLICA_THEME_JS_DIR
+
+                //Images directory must be present as defined in index.php
+
+                self::get_system('theme_img_dir'),   //  REPLICA_THEME_JS_DIR
+
+                //Main stylesheet must be present as defined in index.php
+
+                self::get_system('theme_main_css'),   //  REPLICA_THEME_DEFAULT_CSS_FILE
+
+                //Errors template must be present as defined in index.php
+
+                self::get_system('theme_errors_tpl'),  //  REPLICA_THEME_ERRORS_TEMPLATE
+
+                //Partial directory must be present as defined in index.php
+
+                self::get_system('theme_partial')     //  REPLICA_THEME_PARTIAL_DIR
             ];
 
         foreach ($replica_required_theme_contents as $req) {
@@ -658,7 +631,7 @@ class Replica
      */
     private function _parse_uri_collections()
     {
-        return explode('/', filter_var(self::_whitespace_slashes(self::input('get', 'replica_uri')), FILTER_SANITIZE_URL));
+        return explode('/', rtrim(filter_var(self::input('get','replica_uri'), FILTER_SANITIZE_URL),'/'));
     }
 
     # REPLICA NON STATIC
@@ -676,14 +649,14 @@ class Replica
             }
         }
 
-        return null;
+        return [];
     }
 
     # REPLICA STATICALLY ACCESSIBLE PUBLIC METHODS
 
     /*
     |--------------------------------------------------------------------------
-    | Replica::get('nav','main');
+    | Replica::module_load('nav','main');
     |--------------------------------------------------------------------------
     |
     | Get the replica nav and widgets
@@ -691,24 +664,30 @@ class Replica
     */
 
 
-    public static function get($type,$path)
+    public static function module_load($type,$path)
     {
 
-        switch(strtolower($type))
+        //type
+        $type = strtolower($type);
+
+        //Check to see if nav module is requested under varies names
+        if(in_array($type, self::get_system('module_load_navigation_system')))
         {
-            case "nav":
-                $nav = NAV . $path . EXT;
-                if (self::_check_file($nav))
-                    return self::_include_file($nav);
-                break;
-            case 'widget':
-                $widget = WIDGETS.$path.EXT;
-                if(self::_check_file($widget))
-                    return self::_include_file($widget);
-                break;
+            //if the request exist than return array
+            if(self::_check_file(self::get_system('path_to_nav_dir').$path.EXT))
+                return self::_include_file(self::get_system('path_to_nav_dir').$path.EXT);
         }
 
-        return [];
+        //check to see if the request is to load widget
+        elseif(in_array($type, self::get_system('module_load_widget')))
+        {
+            //If the request exists return in array format
+            if(self::_check_file(self::get_system('path_to_widgets_dir').$path.EXT))
+                return self::_include_file(self::get_system('path_to_widgets_dir').$path.EXT);
+        }
+
+        //if there is nothing just return empty array that foreach doesn't return error
+        return  [];
     }
 
 
@@ -765,7 +744,7 @@ class Replica
 
     /*
      |--------------------------------------------------------------------------
-     | Replica::include_get('header')
+     | Replica::include_partial('header')
      |--------------------------------------------------------------------------
      |
      | Method that will include view partial e.g.
@@ -778,31 +757,56 @@ class Replica
 
 
     /**
+     * @param $type
      * @param $partial
      * @param array $params
      * @return mixed|null
      */
-    public static function include_get($partial, $params = [])
+    public static function include_partial($type="", $partial, $params = [])
     {
-        //Request require file
-        $request = CURRENT_THEME_DIR . self::_whitespace_slashes(REPLICA_THEME_PARTIAL_DIR) . DS . strtolower($partial) . EXT;
+        //Convert partial to all lower so we can type match
+        $partial = strtolower($partial);
+        $type = strtolower($type);
 
-        switch ($partial) {
-            case $partial:
-                if (strtolower($partial) == "header") {
-                    $title = isset($params['title']) ? $params['title'] : REPLICA_DEFAULT_SITE_NAME;
-                    $meta_description = isset($params['meta_description']) ? $params['meta_description'] : REPLICA_DEFAULT_SITE_DESCRIPTION;
-                    $meta_keywords = isset($params['meta_keywords']) ? $params['meta_keywords'] : REPLICA_DEFAULT_SITE_KEYWORDS;
-                } elseif (strtolower($partial) == "sidebar") {
-                    $sidebar_title = isset($params['sidebar_title']) ? $params['sidebar_title'] : "";
-                    $sidebar_content = isset($params['sidebar_content']) ? $params['sidebar_content'] : "";
-                } elseif (strtolower($partial) == "widgets") {
-                    $widget_title = isset($params['widget_title']) ? $params['widget_title'] : "";
-                    $widget_content = isset($params['widget_content']) ? $params['widget_content'] : "";
-                }
-                return self::_check_file($request) ? include_once $request : null;
-        }
-        return null;
+        //Request require file
+        $request = null;
+
+        //Prepare the default
+        $default =(self::_check_file(CURRENT_THEME_DIR.self::get_system('theme_partial').DS.$partial.EXT)) ? CURRENT_THEME_DIR.self::get_system('theme_partial').DS.$partial.EXT : null;
+
+        #TEST TO SEE IF SPECIFIC PART IS REQUESTED
+            if (in_array($type, self::get_system('include_partial_header'))) {
+
+                $title = isset($params['title']) ? $params['title'] : self::get_system('meta_title');
+                $meta_description = isset($params['meta_description']) ? $params['meta_description'] : self::get_system('meta_desc');
+                $meta_keywords = isset($params['meta_keywords']) ? $params['meta_keywords'] : self::get_system('meta_tags');
+
+                $request = $default;
+                #HEADER HAS BEEN REQUESTED
+
+            } elseif (in_array($type, self::get_system('include_partial_sidebar'))) {
+
+                //Since the designer can choose to put the sidebar in different directory lets look at that dir
+                $request=(self::_check_file(CURRENT_THEME_DIR.self::get_system('theme_sidebars').DS.$partial.EXT)) ? CURRENT_THEME_DIR.self::get_system('theme_sidebars').DS.$partial.EXT : null;
+
+                #SIDEBAR HAS BEEN REQUESTED
+
+            } elseif (in_array($type, self::get_system('include_partial_widget'))) {
+
+                //Now since widgets can also have their own custom directories lets check the widget directory
+
+                $request=(self::_check_file(CURRENT_THEME_DIR.self::get_system('theme_widgets').DS.$partial.EXT)) ? CURRENT_THEME_DIR.self::get_system('theme_widgets').DS.$partial.EXT : null;
+
+                #WIDGETS HAS BEEN REQUESTED
+            }else
+            {
+                //If none of the above partials are defined, return the partials directory as default
+                $request= $default;
+            }
+
+            if(!is_null($request))
+                return require_once $request;
+        return $request;
     }
 
 
@@ -820,53 +824,61 @@ class Replica
      * @param array $assets
      * @return null|string
      */
-    public static function assets_get($type, $assets = [])
+    public static function assets_load($type,$assets=[])
     {
-        $asset_type = strtolower($type);
+        //Convert type to lowercase for case matching
+        $type = strtolower($type);
 
-        //Where to start the counter for generating automatic directory separators
-        $start = defined("AT_403_ON_DIR") ? 0 : 1;
+        //Determine the start point of the counter for URL Separator
+        $counter_start = defined('AT_403_ON_DIR') ? 1 : 1;
 
-        switch ($asset_type) {
+        //Initialize @$auto_dumper variable to collect information
+        $auto_dumper="<!--".self::get_system('system_name')." ".self::get_system('system_version')." assets  auto-dump: {$type} //-->".PHP_EOL;
 
-            case 'css':
-                $css = "<!--replica assets auto-dump: Stylesheet //-->" . PHP_EOL;
-                if (count($assets) >= 1) {
-                    foreach ($assets as $asset) {
+        //Check make sure there is at lease one request in the array before stating any work
+        if(count($assets) >=1)
+        {
 
-                        #ONLY INCLUDE ASSET IF EXISTS TO ELIMINATE 404 ERRORS
-                        if (self::_check_file(CURRENT_THEME_DIR . $asset)) {
-                            //Generate separator tp link asset from relative path from current uri
-                            $uri = count(self::_query_string());
-                            $separator = "";
-                            for ($i = $start; $i < $uri; $i++) {
-                                $separator .= "../";
-                            }
+            //Loop through each requested resource
+            foreach($assets as $asset)
+            {
+                //Verify that the resource does exist before we continue with any thing
+                if(self::_check_file(CURRENT_THEME_DIR.$asset))
+                {
 
-                            $css .= '<link rel="stylesheet" href="' . $separator . self::_whitespace_slashes(REPLICA_CUSTOM_ASSETS_DIR) . '/' . CURRENT_THEME_NAME . '/' . $asset . '">' . PHP_EOL;
-                        }
+                    //define default separator
+                    $url_separator ="";
+
+                    //Count the counter page query string count to determine number of separators needed
+                    for($i=$counter_start; $i<count(self::_query_string()); $i++)
+                    {
+                        //for every count add this to separator
+                        $url_separator.="../";
+                    }
+
+                    //determine the type of requested resource
+                    if(in_array($type,self::get_system('assets_load_css')))
+                    {
+                        //If the request type is stylesheet only deal with css and assign all of the to the dumper
+                        $auto_dumper.='<link rel="stylesheet" href="' . $url_separator . self::get_system('assets_dir_name') . '/' . CURRENT_THEME_NAME . '/' . $asset . '">' . PHP_EOL;
+
+                    }elseif(in_array($type,self::get_system('assets_load_js')))
+                    {
+                        //Or if the request type is javascript assign all verified javascript files to the dumper
+                        $auto_dumper.='<script src="' . $url_separator . self::get_system('assets_dir_name') . '/' . CURRENT_THEME_NAME . '/' . $asset . '"> </script>' . PHP_EOL;
                     }
                 }
-                return $css;
-            case 'js':
-                $js = "<!--replica assets auto-dump: JavaScript  //-->" . PHP_EOL;
-                if (count($assets) >= 1) {
-                    foreach ($assets as $asset) {
-                        if (self::_check_file(CURRENT_THEME_DIR . $asset)) {
-                            //Generate separator tp link asset from relative path from current uri
-                            $uri = count(self::_query_string());
-                            $separator = "";
-                            for ($i = $start; $i < $uri; $i++) {
-                                $separator .= "../";
-                            }
-                            $js .= '<script src="' . $separator . self::_whitespace_slashes(REPLICA_CUSTOM_ASSETS_DIR) . '/' . CURRENT_THEME_NAME . '/' . $asset . '"> </script>' . PHP_EOL;
-                        }
-                    }
-                }
-                return $js;
+            }
+
+
+            //Dump everything to the page
+            return $auto_dumper;
         }
+
         return null;
+
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -907,7 +919,7 @@ class Replica
 
     /*
     |--------------------------------------------------------------------------
-    | Replica::input('get', 'username');
+    | Replica::input('get', 'query');
     |--------------------------------------------------------------------------
     | returns $_POST or $_GET var
     |
@@ -942,7 +954,11 @@ class Replica
 
     public static function dd($var)
     {
-        return var_dump("<pre>",$var,"</pre>");
+
+            echo "<div style='width::90%; padding: 15px; margin: 0 auto; border: 2px solid #d35400; border-radius: 5px; background-color: #f39c12'; color: #fff; font-size: 1.3em;'><h1> Replica Diagnosics</h1><hr> <pre>";
+                var_dump($var);
+            echo "</pre></div>";
+
     }
 
 
@@ -951,31 +967,127 @@ class Replica
     |--------------------------------------------------------------------------
     | Replica::get_system()
     |--------------------------------------------------------------------------
-    | returns the current version of the application
+    | Parse system configuration settings
     |
     */
 
 
     /**
      * @param $request
-     * @return null
+     * @return array
      */
     public static function get_system($request)
     {
-       $replica_info = ['name'=>'Replica','state'=>true,'version'=> 0.01,'release_date' => '12/08/2014','url'=>'http://sharif.co/projects/replica','timezone'=>REPLICA_DEFAULT_TIME_ZONE ];
-
-        foreach($replica_info as $info_key=>$info_value)
-        {
-            if(strtolower($request)==$info_key)
-            {
-                return $info_value;
-            }
-        }
-        return null;
+       while($config=array_key_exists($request, self::_system_configuration_settings()))
+       {
+           if($config)
+               return self::_system_configuration_settings()[$request];
+       }
+        return [];
     }
+
+
+    /*
+   |--------------------------------------------------------------------------
+   | self::_system_configuration_settings()
+   |--------------------------------------------------------------------------
+   | Holds array of the system configuration, formats user configurations e.g.
+   | removes whitespaces, slashes, sets to correct casings
+   |
+   */
+
+    /**
+     * @return array
+     */
+    private static function _system_configuration_settings()
+    {
+        return [
+
+            #USER SYSTEM SETTINGS
+            'timezone'          =>  REPLICA_DEFAULT_TIME_ZONE,
+            'debug_mode'        =>  REPLICA_DEBUG_MODE,
+
+            #USER CUSTOMIZATION
+
+            //Custom directory names ** NOT PATH JUST NAMES **
+
+            'core_dir_name'     => self::_whitespace_slashes(REPLICA_CUSTOM_CORE_DIR),
+            'modules_dir_name'  => self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_DIR),
+            'assets_dir_name'   => self::_whitespace_slashes(REPLICA_CUSTOM_ASSETS_DIR),
+            'data_dir_name'     => self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR),
+
+            'nav_dir_name'      => self::_whitespace_slashes(REPLICA_CUSTOM_DATA_NAV_DIR),
+            'pages_dir_name'    => self::_whitespace_slashes(REPLICA_CUSTOM_DATA_PAGES_DIR),
+            'widgets_dir_name'  => self::_whitespace_slashes(REPLICA_CUSTOM_DATA_WIDGETS_DIR),
+
+            # DIRECTORIES
+
+            //System
+            'path_to_root_dir'                 => REPLICA_ROOT_DIR,
+            'path_to_core_dir'                 => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_CORE_DIR) . DS,
+            'path_to_assets_dir'               => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_ASSETS_DIR) . DS,
+            'path_to_data_dir'                 => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS,
+            'path_to_modules_dir'              => REPLICA_ROOT_DIR.  self::_whitespace_slashes(REPLICA_CUSTOM_CORE_DIR).DS.self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_DIR) . DS,
+
+            //Data
+            'path_to_pages_dir'                => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_PAGES_DIR) . DS,
+            'path_to_nav_dir'                  => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS. self::_whitespace_slashes(REPLICA_CUSTOM_DATA_NAV_DIR) . DS,
+            'path_to_widgets_dir'              => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_WIDGETS_DIR) . DS,
+
+            //Theme
+
+            'theme'             => self::_whitespace_slashes(REPLICA_THEME),
+            'theme_partial'     => self::_whitespace_slashes(REPLICA_THEME_PARTIAL_DIR),
+            'theme_index'       => self::_whitespace_slashes(REPLICA_THEME_DEFAULT_INDEX).EXT,
+            'theme_css_dir'     => self::_whitespace_slashes(REPLICA_THEME_CSS_DIR),
+            'theme_js_dir'      => self::_whitespace_slashes(REPLICA_THEME_JS_DIR),
+            'theme_img_dir'     => self::_whitespace_slashes(REPLICA_THEME_IMG_DIR),
+            'theme_main_css'    => self::_whitespace_slashes(REPLICA_THEME_CSS_DIR).DS.self::_whitespace_slashes(REPLICA_THEME_DEFAULT_CSS_FILE).'.css',
+            'theme_errors_tpl'  => self::_whitespace_slashes(REPLICA_THEME_ERRORS_TEMPLATE).EXT,
+            'page_extension'    => self::_whitespace_slashes(strtolower(REPLICA_PAGE_EXTENSION)),
+            'theme_sidebars'    => self::_whitespace_slashes(REPLICA_THEME_SIDEBARS_DIR),
+            'theme_widgets'     => self::_whitespace_slashes(REPLICA_THEME_WIDGETS_DIR),
+
+            //Default settings
+
+            'meta_title'         => REPLICA_DEFAULT_SITE_NAME,
+            'meta_desc'         => REPLICA_DEFAULT_SITE_DESCRIPTION,
+            'meta_tags'         => REPLICA_DEFAULT_SITE_KEYWORDS,
+
+            #CORE SYSTEM CONFIG
+
+            //Replica::assets_load()
+
+            'assets_load_css'        => ['css','stylesheet','style','styles','c'],
+            'assets_load_js'         => ['js','javascript','script','scripts','j'],
+
+            //Replica::module_load()
+
+            'module_load_navigation_system'      => ['nav','navigation','menu','mainmenu'],
+            'module_load_widget'                 => ['widget','widgets','module','addon','extension'],
+
+
+            //Replica::include_partial()
+
+            'include_partial_header'    => ['header','head','top'],
+            'include_partial_footer'    => ['footer','bottom'],
+            'include_partial_widget'    => ['widgets','widget','addon','addin'],
+            'include_partial_sidebar'   => ['sidebar','aside','left_sidebar','right_sidebar','justify_sidebar','top_sidebar','bottom_sidebar','middle_sidebar'],
+
+            //Version Information
+
+            'system_name'              =>  'Replica',
+            'system_state'             =>   true,
+            'system_version'           =>   0.01,           //do not manually change this
+            'system_release_date'      =>  '12/08/2014',
+            'system_url'               =>  'http://replica.sharif.co'
+        ];
+    }
+
+
 
 }
 
 
 //Instantiate the replica class
-$Replica = new Replica();
+$app = new Replica();

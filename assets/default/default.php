@@ -1,7 +1,7 @@
 <?php
 if(!defined('REPLICA')) {die('Sorry direct access to this file not allowed');}
 
-Replica::include_get('header',[
+Replica::include_partial('top','header',[
     'title' => $title,
     'meta_description'  => $meta_description,
     'meta_keywords'     => $meta_keywords
@@ -11,7 +11,7 @@ Replica::include_get('header',[
 
     <header>
         <ul>
-            <?php if(@$display_nav): foreach(Replica::get('nav','main') as $nav_label=>$nav_url):?>
+            <?php if(@$display_nav): foreach(Replica::module_load('menu','main') as $nav_label=>$nav_url):?>
 
             <li><a href="<?=$nav_url;?>"> <?=$nav_label;?></a></li>
 
@@ -42,4 +42,4 @@ Replica::include_get('header',[
 
 
 
-<?php Replica::include_get('footer'); ?>
+<?php Replica::include_partial('footer','footer'); ?>

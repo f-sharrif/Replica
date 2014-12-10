@@ -6,7 +6,7 @@
     <title><?=@Replica::escape(@$title);?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" href="http://sharif.co/favicon.ico">
-    <?=Replica::assets_get('css',['css/styles.css']);?>
+    <?=Replica::assets_load('css',['css/styles.css']);?>
 </head>
 <body>
     <div class="wrapper center-text">
@@ -21,5 +21,8 @@
             </section>
         </div>
     </div>
+
+
+    <?=Replica::assets_load('js',['js/script.js']);?>
 </body>
 </html>

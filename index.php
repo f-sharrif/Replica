@@ -117,6 +117,14 @@
     //What is your default javascript file name
     define('REPLICA_THEME_DEFAULT_JS_FILE', 'scripts');  //default=>'scripts'
 
+    //If there is custom place for sidebars other than the includes partial
+
+    define('REPLICA_THEME_SIDEBARS_DIR', REPLICA_THEME_PARTIAL_DIR); //By default => same as theme partials
+
+    //If you keep your widgets templates anywhere other than where you keep includes partial
+
+    define('REPLICA_THEME_WIDGETS_DIR', 'widgets'); //By default => widgets
+
 
     /*
     |--------------------------------------------------------------------------
@@ -129,7 +137,7 @@
     |
     */
 
-    //setting this doesn't force every page to be called with extension in fact the page will show with and without extension
+    //setting this doesn't force every page to be called with extension in fact, if valid page is called without this extension it will render
     define('REPLICA_PAGE_EXTENSION', 'html');  //default =>html
 
 
@@ -155,7 +163,8 @@
 
     define('REPLICA_CUSTOM_ASSETS_DIR', 'assets');  //default =>assets
 
-    define('REPLICA_CUSTOM_MODULES_DIR', 'core/modules'); //default =>core/modules
+
+
 
      /*
      |--------------------------------------------------------------------------
@@ -218,6 +227,11 @@
     |
     */
 
+
+    //Location of system core modules classes must be with your defined core directory
+    define('REPLICA_CUSTOM_MODULES_DIR', 'modules'); //default =>core/modules
+
+    //Location of the system core Replica Class
     define('REPLICA_CUSTOM_CORE_DIR', 'core'); //default =>Core
 
 
@@ -294,4 +308,4 @@
     |
     */
 
-    $Replica->run();
+    $app->run();
