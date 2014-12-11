@@ -4,7 +4,10 @@ if(!defined('REPLICA')) {die('Sorry direct access to this file not allowed');}
 
 <div class="events">
 
-    <?php foreach(Replica::module_load('widget','events') as $event): ?>
+
+    <?php
+
+     foreach(Replica::widget_load('widget','events') as $event): ?>
 
         <div class="even_list">
            <h1><a href="<?=$event['url'];?>"> <?=$event['title'];?></a></h1>
@@ -21,7 +24,7 @@ if(!defined('REPLICA')) {die('Sorry direct access to this file not allowed');}
         </div>
         <hr>
 
-     <?php endforeach;?>
+     <?php endforeach; ?>
 
 
 </div>

@@ -11,7 +11,7 @@ Replica::include_partial('top','header',[
 
     <header>
         <ul>
-            <?php if(@$display_nav): foreach(Replica::module_load('menu','main') as $nav_label=>$nav_url):?>
+            <?php if(@$display_nav): foreach(Replica::widget_load('menu','main') as $nav_label=>$nav_url):?>
 
             <li><a href="<?=$nav_url;?>"> <?=$nav_label;?></a></li>
 

@@ -1,5 +1,30 @@
 <?php
-
+/*
+ * ----------------------------------------------------------------------------------------------------------------
+ * # PACKAGE INFORMATION
+ * ----------------------------------------------------------------------------------------------------------------
+ *
+ * @package: Replica
+ * @author: Abdikadir Adan (Sharif)  -url [http://sharif.co] -Email [hello@sharif.co]
+ * @url: http://replica.sharif.co
+ * @author: -Github [sp01010011]
+ * @filesource: core/Replica.php
+ *
+ * ----------------------------------------------------------------------------------------------------------------
+ * # ABOUT THE PACKAGE
+ * ----------------------------------------------------------------------------------------------------------------
+ *
+ * Replica is single class php based templating engine developed with designers that
+ * works on smaller web  projects in mind. Replica allows the designer to
+ * quickly develop a functional file based dynamic website. Most Importantly, Replica
+ * is built with flexibility, customization  and ease of use being the priority, therefore, designer / developer
+ * decides what data to show, how to show it and where to show it. Your design not only frontend
+ * but also the data structure and how that data is ported to your design.
+ *
+ * All configurations and customizations are done in the index.php, and throw the Replica class in the
+ * mix and you're ready building a sophisticated website for your clients.
+ *
+ */
 class Replica
 {
 
@@ -281,7 +306,7 @@ class Replica
         $ur =$this->_parse_uri_collections();
 
         //Check to see if we have at least one uri other than index is requested
-        if(count($ur)>=1 && $ur[0]!="")
+        if(count($ur)>=1 && reset($ur)!="")
         {
 
             //Declare empty variable to assign the processed request bits
@@ -301,17 +326,11 @@ class Replica
                  //lets check if has exploded into name and extension
                    if(count($page_eval)==2)
                    {
-                       //Assign the send part as extension
-                       $request_extension = $page_eval[1];
-
-                       //The first part as the request file
-                        $request_final     = $page_eval[0];
-
                        //Evaluate to see if the extension is the same as the Replica Page Extension configured in the settings
-                       if(strtolower($request_extension)===self::get_system('page_extension'))
+                       if(strtolower(end($page_eval))===self::get_system('page_extension'))
                        {
                            //If it evaluated correctly process the file according to this
-                           $request.=DS.$request_final;
+                           $request.=DS.prev($page_eval);
                        }
 
                    }else
@@ -415,7 +434,9 @@ class Replica
 
         // Collect all the various assigned variables to the view or template and make it available
 
-        foreach ($this->_template_data as $data => $value) {
+        foreach ($this->_template_data as $data => $value)
+        {
+            //Assign the data variable to itself (** DO NOT REMOVE THE SECOND "$" FROM $$DATA ***)
             $$data = $value;
         }
 
@@ -547,7 +568,7 @@ class Replica
         return $result_request_only;
 
     }
-    
+
 
     /*
     |--------------------------------------------------------------------------
@@ -599,7 +620,7 @@ class Replica
         //If exploded properly there should me more than one in $qs count
         if (count($qs) > 1)
             //now explode the second one by the slash as we only need the second one and the rest will be discarded
-            return explode('/', $qs[1]);
+            return explode('/', next($qs));
         else
             //if there aren't any then just return empty array
             return [];
@@ -748,7 +769,7 @@ class Replica
 
     /*
     |--------------------------------------------------------------------------
-    | Replica::module_load('nav','main');
+    | Replica::widget_load('nav','main');
     |--------------------------------------------------------------------------
     |
     | Get the replica nav and widgets
@@ -756,25 +777,28 @@ class Replica
     */
 
 
-    public static function module_load($type,$path)
+    public static function widget_load($type,$path)
     {
 
         //type
         $type = strtolower($type);
 
-        //Check to see if nav module is requested under varies names
-        if(in_array($type, self::get_system('module_load_navigation_system')))
+        //Check to see if nav widget is requested under varies names
+        if(in_array($type, self::get_system('widget_load_navigation_system')))
         {
             //if the request exist than return array
             if(self::_check_file(self::get_system('path_to_nav_dir').$path.EXT))
+
                 return self::_include_file(self::get_system('path_to_nav_dir').$path.EXT);
         }
 
         //check to see if the request is to load widget
-        elseif(in_array($type, self::get_system('module_load_widget')))
+        elseif(in_array($type, self::get_system('widget_load_widget')))
         {
             //If the request exists return in array format
             if(self::_check_file(self::get_system('path_to_widgets_dir').$path.EXT))
+
+
                 return self::_include_file(self::get_system('path_to_widgets_dir').$path.EXT);
         }
 
@@ -896,8 +920,13 @@ class Replica
                 $request= $default;
             }
 
+            //Check to see to make sure there is value within the result
             if(!is_null($request))
+
+                //if there is a result then return the data of the request file
                 return require_once $request;
+
+        //otherwise return empty result
         return $request;
     }
 
@@ -921,9 +950,6 @@ class Replica
         //Convert type to lowercase for case matching
         $type = strtolower($type);
 
-        //Determine the start point of the counter for URL Separator
-        $counter_start = defined('AT_403_ON_DIR') ? 1 : 1;
-
         //Initialize @$auto_dumper variable to collect information
         $auto_dumper="<!--".self::get_system('system_name')." ".self::get_system('system_version')." assets  auto-dump: {$type} //-->".PHP_EOL;
 
@@ -942,7 +968,7 @@ class Replica
                     $url_separator ="";
 
                     //Count the counter page query string count to determine number of separators needed
-                    for($i=$counter_start; $i<count(self::_query_string()); $i++)
+                    for($i=self::get_system('assets_load_counter_start'); $i<count(self::_query_string()); $i++)
                     {
                         //for every count add this to separator
                         $url_separator.="../";
@@ -1096,89 +1122,90 @@ class Replica
         return [
 
             #USER SYSTEM SETTINGS
-            'timezone'          =>  REPLICA_DEFAULT_TIME_ZONE,
-            'debug_mode'        =>  REPLICA_DEBUG_MODE,
+            'timezone'                      =>  REPLICA_DEFAULT_TIME_ZONE,
+            'debug_mode'                    =>  REPLICA_DEBUG_MODE,
 
             #USER CUSTOMIZATION
 
             //Custom directory names ** NOT PATH JUST NAMES **
 
-            'core_dir_name'     => self::_whitespace_slashes(REPLICA_CUSTOM_CORE_DIR),
-            'modules_dir_name'  => self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_DIR),
-            'assets_dir_name'   => self::_whitespace_slashes(REPLICA_CUSTOM_ASSETS_DIR),
-            'data_dir_name'     => self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR),
+            'core_dir_name'                 => self::_whitespace_slashes(REPLICA_CUSTOM_CORE_DIR),
+            'modules_dir_name'              => self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_DIR),
+            'assets_dir_name'               => self::_whitespace_slashes(REPLICA_CUSTOM_ASSETS_DIR),
+            'data_dir_name'                 => self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR),
 
-            'nav_dir_name'      => self::_whitespace_slashes(REPLICA_CUSTOM_DATA_NAV_DIR),
-            'pages_dir_name'    => self::_whitespace_slashes(REPLICA_CUSTOM_DATA_PAGES_DIR),
-            'widgets_dir_name'  => self::_whitespace_slashes(REPLICA_CUSTOM_DATA_WIDGETS_DIR),
+            'nav_dir_name'                  => self::_whitespace_slashes(REPLICA_CUSTOM_DATA_NAV_DIR),
+            'pages_dir_name'                => self::_whitespace_slashes(REPLICA_CUSTOM_DATA_PAGES_DIR),
+            'widgets_dir_name'              => self::_whitespace_slashes(REPLICA_CUSTOM_DATA_WIDGETS_DIR),
 
             # DIRECTORIES
 
             //System
-            'path_to_root_dir'                 => REPLICA_ROOT_DIR,
-            'path_to_core_dir'                 => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_CORE_DIR) . DS,
-            'path_to_assets_dir'               => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_ASSETS_DIR) . DS,
-            'path_to_data_dir'                 => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS,
-            'path_to_modules_dir'              => REPLICA_ROOT_DIR.  self::_whitespace_slashes(REPLICA_CUSTOM_CORE_DIR).DS.self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_DIR) . DS,
+            'path_to_root_dir'              => REPLICA_ROOT_DIR,
+            'path_to_core_dir'              => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_CORE_DIR) . DS,
+            'path_to_assets_dir'            => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_ASSETS_DIR) . DS,
+            'path_to_data_dir'              => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS,
+            'path_to_modules_dir'           => REPLICA_ROOT_DIR.  self::_whitespace_slashes(REPLICA_CUSTOM_CORE_DIR).DS.self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_DIR) . DS,
 
             //Data
-            'path_to_pages_dir'                => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_PAGES_DIR) . DS,
-            'path_to_nav_dir'                  => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS. self::_whitespace_slashes(REPLICA_CUSTOM_DATA_NAV_DIR) . DS,
-            'path_to_widgets_dir'              => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_WIDGETS_DIR) . DS,
+            'path_to_pages_dir'             => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_PAGES_DIR) . DS,
+            'path_to_nav_dir'               => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS. self::_whitespace_slashes(REPLICA_CUSTOM_DATA_NAV_DIR) . DS,
+            'path_to_widgets_dir'           => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_WIDGETS_DIR) . DS,
 
             //Theme
 
-            'theme'             => self::_whitespace_slashes(REPLICA_THEME),
-            'theme_partial'     => self::_whitespace_slashes(REPLICA_THEME_PARTIAL_DIR),
-            'theme_index'       => self::_whitespace_slashes(REPLICA_THEME_DEFAULT_INDEX).EXT,
-            'theme_css_dir'     => self::_whitespace_slashes(REPLICA_THEME_CSS_DIR),
-            'theme_js_dir'      => self::_whitespace_slashes(REPLICA_THEME_JS_DIR),
-            'theme_img_dir'     => self::_whitespace_slashes(REPLICA_THEME_IMG_DIR),
-            'theme_main_css'    => self::_whitespace_slashes(REPLICA_THEME_CSS_DIR).DS.self::_whitespace_slashes(REPLICA_THEME_DEFAULT_CSS_FILE).'.css',
-            'theme_errors_tpl'  => self::_whitespace_slashes(REPLICA_THEME_ERRORS_TEMPLATE).EXT,
-            'page_extension'    => self::_whitespace_slashes(strtolower(REPLICA_PAGE_EXTENSION)),
-            'theme_sidebars'    => self::_whitespace_slashes(REPLICA_THEME_SIDEBARS_DIR),
-            'theme_widgets'     => self::_whitespace_slashes(REPLICA_THEME_WIDGETS_DIR),
+            'theme'                         => self::_whitespace_slashes(REPLICA_THEME),
+            'theme_partial'                 => self::_whitespace_slashes(REPLICA_THEME_PARTIAL_DIR),
+            'theme_index'                   => self::_whitespace_slashes(REPLICA_THEME_DEFAULT_INDEX).EXT,
+            'theme_css_dir'                 => self::_whitespace_slashes(REPLICA_THEME_CSS_DIR),
+            'theme_js_dir'                  => self::_whitespace_slashes(REPLICA_THEME_JS_DIR),
+            'theme_img_dir'                 => self::_whitespace_slashes(REPLICA_THEME_IMG_DIR),
+            'theme_main_css'                => self::_whitespace_slashes(REPLICA_THEME_CSS_DIR).DS.self::_whitespace_slashes(REPLICA_THEME_DEFAULT_CSS_FILE).'.css',
+            'theme_errors_tpl'              => self::_whitespace_slashes(REPLICA_THEME_ERRORS_TEMPLATE).EXT,
+            'page_extension'                => self::_whitespace_slashes(strtolower(REPLICA_PAGE_EXTENSION)),
+            'theme_sidebars'                => self::_whitespace_slashes(REPLICA_THEME_SIDEBARS_DIR),
+            'theme_widgets'                 => self::_whitespace_slashes(REPLICA_THEME_WIDGETS_DIR),
 
             //Default settings
 
-            'meta_title'         => REPLICA_DEFAULT_SITE_NAME,
-            'meta_desc'         => REPLICA_DEFAULT_SITE_DESCRIPTION,
-            'meta_tags'         => REPLICA_DEFAULT_SITE_KEYWORDS,
+            'meta_title'                    => REPLICA_DEFAULT_SITE_NAME,
+            'meta_desc'                     => REPLICA_DEFAULT_SITE_DESCRIPTION,
+            'meta_tags'                     => REPLICA_DEFAULT_SITE_KEYWORDS,
 
             #CORE SYSTEM CONFIG : METHOD HELPERS
 
             //Replica::assets_load()
 
-            'assets_load_css'        => ['css','stylesheet','style','styles','c'],
-            'assets_load_js'         => ['js','javascript','script','scripts','j'],
+            'assets_load_css'               => ['css','stylesheet','style','styles','c'],
+            'assets_load_js'                => ['js','javascript','script','scripts','j'],
+            'assets_load_counter_start'     =>  defined('AT_403_ON_DIR') ? 1 : 1, // determines the counter start point for dynamic separators
 
-            //Replica::module_load()
+            //Replica::widget_load()
 
-            'module_load_navigation_system'      => ['nav','navigation','menu','mainmenu'],
-            'module_load_widget'                 => ['widget','widgets','module','addon','extension'],
+            'widget_load_navigation_system'  => ['nav','navigation','menu','mainmenu'],
+            'widget_load_widget'             => ['widget','widgets','addon','extension'],
 
 
             //Replica::include_partial()
 
-            'include_partial_header'    => ['header','head','top'],
-            'include_partial_footer'    => ['footer','bottom'],
-            'include_partial_widget'    => ['widgets','widget','addon','addin'],
-            'include_partial_sidebar'   => ['sidebar','aside','left_sidebar','right_sidebar','justify_sidebar','top_sidebar','bottom_sidebar','middle_sidebar'],
+            'include_partial_header'         => ['header','head','top'],
+            'include_partial_footer'         => ['footer','bottom'],
+            'include_partial_widget'         => ['widgets','widget','addon','addin'],
+            'include_partial_sidebar'        => ['sidebar','aside','left_sidebar','right_sidebar','justify_sidebar','top_sidebar','bottom_sidebar','middle_sidebar'],
 
             //Replica::scan_for();
 
-            'scan_for_dirs'            => ['dir','dirs','directory','directories','folders','folder','non-file'],
-            'scan_for_non_dirs'        => ['non-dirs','files','file','document','documents','docs'],
+            'scan_for_dirs'                  => ['dir','dirs','directory','directories','folders','folder','non-file'],
+            'scan_for_non_dirs'              => ['non-dirs','files','file','document','documents','docs'],
 
 
             //Version Information
 
-            'system_name'              =>  'Replica',
-            'system_state'             =>   true,
-            'system_version'           =>   0.01,           //do not manually change this
-            'system_release_date'      =>  '12/08/2014',
-            'system_url'               =>  'http://replica.sharif.co'
+            'system_name'                    =>  'Replica',
+            'system_state'                   =>   true,
+            'system_version'                 =>   0.01,           //do not manually change this
+            'system_release_date'            =>  '12/08/2014',
+            'system_url'                     =>  'http://replica.sharif.co'
         ];
     }
 
