@@ -5,30 +5,57 @@ class Replica
 
     /*
     |--------------------------------------------------------------------------
-    | Class properties
+    | Class properties : PRIVATE
     |--------------------------------------------------------------------------
     |
     | @var $_page: holds default page to load if no page is requested
     | @var $_template: holds the current template directory for the page
-    | @var $_template_data = collect data assigned via magic __set() method
-    | @var $_request_exists = flags whether the request resource exists or not
+    | @var $_template_data => collect data assigned via magic __set() method
+    | @var $_request_exists => flags whether the request resource exists or not
+    | @var $_scan_dir_excludes => directories to exclude from scan dir result
+    | @var $_module_list => store list of modules
+    | @var $_active_modules => list of active modules
     |
     */
 
-    private $_page = 'index',
+    private
+
+            //Default page to load if no request is made
+            $_page = 'index',
+
+            //Custom page template
             $_template = "",
+
+            //List of template data assigned via magic method set
             $_template_data = [],
-            $_request_exists = false;
+
+            //set flag of resource existence
+            $_request_exists = false,
+
+            //List of available modules
+            $_module_list =[],
+
+            //list of active modules
+            $_active_modules =[];
+
+    private static
+
+        //list of directories to exclude from scan dir result
+        $_scan_dir_excludes =['.','..'];
 
     /*
     |--------------------------------------------------------------------------
-    | SET AND GET THEME CONFIG FILE
+    | Class Properties: Public
     |--------------------------------------------------------------------------
     |
     | @var $theme_config : the current theme configuration file
     |
     */
-    public $theme_config= null;
+
+    public
+
+        //theme config file
+        $theme_config= null;
 
 
     /*
@@ -45,7 +72,7 @@ class Replica
      */
     public function run()
     {
-        /*
+       /*
        |--------------------------------------------------------------------------
        | Bootstrap the Application
        |--------------------------------------------------------------------------
@@ -162,7 +189,7 @@ class Replica
                 //Show link to system configuration
                 if(self::input('get','debug')!="show_system_config_settings")
                 {
-                    echo "<a href='?debug=show_system_config_settings' style='text-decoration: none; color:#fff; font-size: 12px; text-align: right; padding: 20px; position: relative'> Show System Configuration Settings</a>";
+                    echo "<a href='?debug=show_system_config_settings' style='text-decoration: none; color:#fff; font-size: 12px;  padding: 4px 45px 4px 4px; float: right;'> Show System Configuration Settings</a>";
                 }
 
             echo "</div>";
@@ -455,7 +482,72 @@ class Replica
         }
 
         return false;
+
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | scan_for_dirs($type, $path,$custom_excludes)
+    |--------------------------------------------------------------------------
+    |
+    |  multi purpose directory scanner, fetches all the data in the directory,
+    |  or only directories or only non directories
+    |
+    |  Originally written as private method, later made to public static method
+    |  for its usefulness in and out of Replica class.
+    |
+    */
+
+
+    /**
+     * @param $type
+     * @param $path
+     * @param array $custom_excludes
+     * @return array
+     */
+
+    public static function scan_for($type,$path, $custom_excludes=[])
+    {
+
+        //Normalize the type to lower case
+        $type = strtolower($type);
+
+        //determine exclude list, since method is now public user can set their own custom excludes are param.
+        $excludes = count($custom_excludes) ? $custom_excludes : self::$_scan_dir_excludes;
+
+        //get the result of the scan different to excludes
+        $result_all = array_diff(scandir($path), $excludes);
+
+        //Initialize a variable to collect only what is requested
+        $result_request_only =[];
+
+        //loop through all the results
+        foreach($result_all as $result)
+        {
+
+           //if the request is only for directory skip any non dirs
+            if(in_array($type, self::get_system('scan_for_dirs')))
+            {
+                if(!self::_is_dir($path.DS.$result)) continue;
+            }
+
+            //If the request is for non dirs, skip the dirs
+            if(in_array($type, self::get_system('scan_for_non_dirs')))
+            {
+                if(self::_is_dir($path.DS.$result)) continue;
+            }
+
+            //assign the result to variable ** IF NO TYPE IS DEFINED ALL MIXED RESULT RETURNED
+            $result_request_only[]= $result;
+
+        }
+
+        //Return list of the directories
+        return $result_request_only;
+
+    }
+    
 
     /*
     |--------------------------------------------------------------------------
@@ -1054,7 +1146,7 @@ class Replica
             'meta_desc'         => REPLICA_DEFAULT_SITE_DESCRIPTION,
             'meta_tags'         => REPLICA_DEFAULT_SITE_KEYWORDS,
 
-            #CORE SYSTEM CONFIG
+            #CORE SYSTEM CONFIG : METHOD HELPERS
 
             //Replica::assets_load()
 
@@ -1073,6 +1165,12 @@ class Replica
             'include_partial_footer'    => ['footer','bottom'],
             'include_partial_widget'    => ['widgets','widget','addon','addin'],
             'include_partial_sidebar'   => ['sidebar','aside','left_sidebar','right_sidebar','justify_sidebar','top_sidebar','bottom_sidebar','middle_sidebar'],
+
+            //Replica::scan_for();
+
+            'scan_for_dirs'            => ['dir','dirs','directory','directories','folders','folder','non-file'],
+            'scan_for_non_dirs'        => ['non-dirs','files','file','document','documents','docs'],
+
 
             //Version Information
 
