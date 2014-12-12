@@ -168,6 +168,40 @@
     define('REPLICA_PAGE_EXTENSION', 'html');  //default =>html
 
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | DEFAULT ERRORS CUSTOMIZATION
+    |--------------------------------------------------------------------------
+    | Here are list of error types defined in replica by default,
+    | this settings will allow you to customize this output errors
+    |
+    |
+    */
+
+    #CUSTOMIZE 404 AND 403 ERRORS
+
+    //Window title for the 404 error page
+    define('REPLICA_404_CUSTOM_ERROR_TITLE', 'Error 404 File Not Found'); //default => Error 404 File Not Found
+
+    //Page header
+    define('REPLICA_404_CUSTOM_ERROR_HEADING', '404');  //default => 404
+
+    //Page message
+    define('REPLICA_404_CUSTOM_ERROR_MESSAGE',  'Woops, page not found.');  //default => Woops, page not found
+
+    //Window title for the 403 error page
+    define('REPLICA_403_CUSTOM_ERROR_TITLE', 'Error 403 Forbidden Access');  //default => Error 403 Forbidden Access
+
+    //Page header
+    define('REPLICA_403_CUSTOM_ERROR_HEADING', '403');  // default => 403
+
+    //Page message
+    define('REPLICA_403_CUSTOM_ERROR_MESSAGE',  "Woops, you're totally forbidden from here"); // default => Woops, you're totally forbidden from here
+
+
+
+
     /*
     |--------------------------------------------------------------------------
     | SYSTEM CUSTOMIZATION
@@ -176,6 +210,7 @@
     | system directories locations and names.
     |
     */
+
 
 
      /*
@@ -293,7 +328,7 @@
     define('DS', DIRECTORY_SEPARATOR);
 
     //System file extension
-    define('EXT', '.php');
+    define('EXT', 'php');
 
     /*
     |--------------------------------------------------------------------------
@@ -317,9 +352,9 @@
     |
     */
 
-    if(is_readable(REPLICA_CUSTOM_CORE_DIR . DS . REPLICA_CUSTOM_CLASS_FILE_NAME . EXT))
+    if(is_readable(REPLICA_CUSTOM_CORE_DIR . DS . REPLICA_CUSTOM_CLASS_FILE_NAME .'.'.EXT))
     {
-        require_once REPLICA_CUSTOM_CORE_DIR . DS . REPLICA_CUSTOM_CLASS_FILE_NAME . EXT;
+        require_once REPLICA_CUSTOM_CORE_DIR . DS . REPLICA_CUSTOM_CLASS_FILE_NAME .'.'. EXT;
 
     }else
     {
