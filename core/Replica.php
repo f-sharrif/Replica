@@ -97,6 +97,7 @@ class Replica
     /**
      * @return mixed
      */
+
     public function run()
     {
        /*
@@ -224,7 +225,27 @@ class Replica
             //Show system configuration
             if(!is_null(self::input('get','debug')) && self::input('get','debug')=='show_system_config_settings')
             {
-                self::dd(self::_system_configuration_settings());
+                //instantiate new replica reflection
+                $r_d = new ReflectionClass('Replica');
+
+                //format the output
+                echo  "<div style='width::90%; padding: 15px; margin: 0 auto; border: 2px solid #d35400; border-radius: 5px; background-color: #f39c12'; color: #fff; font-size: 1.3em;'><h1> Replica Diagnosics</h1><hr> <pre>";
+
+                //Start the system configuration
+                echo "<h2>Replica Configuration</h2>";
+
+                //Dump detailed system configuration
+                var_dump(self::_system_configuration_settings());
+
+                //Start the class reflection
+                echo "<h2>Replica Methods</h2>";
+
+                //dump detailed class information
+                var_dump($r_d->getMethods());
+
+                //end process
+                echo "</pre></div>";
+
             }
 
         }
@@ -376,11 +397,11 @@ class Replica
                     define('AT_403_ON_DIR', true);
 
                     //Redirect user to 403 error and update http headers
-                    return self::Redirect_to(403);
+                    return self::redirect_to(403);
                 }
 
                 //If the request is not directory, it's now obvious that the resource doesn't exist so Redirect to 404
-                return self::Redirect_to(404);
+                return self::redirect_to(404);
             }
 
         }
@@ -402,11 +423,13 @@ class Replica
 
     /*
     |--------------------------------------------------------------------------
-    | Make() Method
+    | $this->make('template_path');
     |--------------------------------------------------------------------------
     |
     | A method responsible for validating and generating request view template
-    | from the current theme
+    | from the current theme. This method is the second most important method
+    | and the reason behind developing Replica.
+    |
     |
     */
     /**
@@ -417,7 +440,7 @@ class Replica
     {
 
         //Initiate the template directory
-        $template_dir = $this->_is_theme_dir(self::get_system('path_to_assets_dir') . self::get_system('theme').DS) ? self::get_system('theme') : 'default';
+        $template_dir = $this->_is_theme_dir(self::get_system('path_to_assets_dir') . self::get_system('theme').DS) ? self::get_system('theme') : self::get_system('default_theme');
 
         //template to be used
 
@@ -537,7 +560,7 @@ class Replica
 
     /*
     |--------------------------------------------------------------------------
-    | _query_string()
+    | self::_query_string()
     |--------------------------------------------------------------------------
     |
     | Returns the uri query string, this method is needed to properly load
@@ -674,12 +697,13 @@ class Replica
 
     /*
     |--------------------------------------------------------------------------
-    |  _parse_uri_collections()
+    | $this->_parse_uri_collections()
     |--------------------------------------------------------------------------
     |
     | Parses the uri for the route method
     |
     */
+
     /**
      * @return array
      */
@@ -852,7 +876,7 @@ class Replica
 
     /*
     |--------------------------------------------------------------------------
-    | Replica::Redirect_to(404); function
+    | Replica::redirect_to(404); function
     |--------------------------------------------------------------------------
     | Redirects throughout the application and
     | renders error pages
@@ -863,7 +887,7 @@ class Replica
      * @param $location
      * @return bool
      */
-    public static function Redirect_to($location=null)
+    public static function redirect_to($location=null)
     {
 
         //by default location is null so check is location is passed in
@@ -944,7 +968,7 @@ class Replica
     |--------------------------------------------------------------------------
     | Replica::rt(404)
     |--------------------------------------------------------------------------
-    | Shorter alias for Replica::Redirect_to();
+    | Shorter alias for Replica::redirect_to();
     |
     */
 
@@ -954,7 +978,7 @@ class Replica
      */
     public static function rt($l)
     {
-        return self::Redirect_to($l);
+        return self::redirect_to($l);
     }
 
 
@@ -1013,7 +1037,6 @@ class Replica
             {
 
                 //Now since widgets can also have their own custom directories lets check the widget directory
-
                 $request=(self::_check_file(CURRENT_THEME_DIR.self::get_system('theme_widgets').DS.$partial.self::get_system('ext'))) ? CURRENT_THEME_DIR.self::get_system('theme_widgets').DS.$partial.self::get_system('ext') : null;
 
                 #WIDGETS HAS BEEN REQUESTED
@@ -1247,9 +1270,6 @@ class Replica
 
     }
 
-
-
-
     /*
     |--------------------------------------------------------------------------
     | Replica::dd($var);
@@ -1261,13 +1281,11 @@ class Replica
     public static function dd($var)
     {
 
-            echo "<div style='width::90%; padding: 15px; margin: 0 auto; border: 2px solid #d35400; border-radius: 5px; background-color: #f39c12'; color: #fff; font-size: 1.3em;'><h1> Replica Diagnosics</h1><hr> <pre>";
+            echo "<div><pre>";
                 var_dump($var);
             echo "</pre></div>";
 
     }
-
-
 
     /*
     |--------------------------------------------------------------------------
@@ -1299,8 +1317,6 @@ class Replica
         return [];
     }
 
-
-
    /*
    |--------------------------------------------------------------------------
    | Replica::sg('config')
@@ -1318,7 +1334,6 @@ class Replica
         //get system information
         return self::get_system($r);
     }
-
 
     /*
    |--------------------------------------------------------------------------
@@ -1339,8 +1354,9 @@ class Replica
 
             #USER SYSTEM SETTINGS
             'timezone'                      =>  self::_whitespace_slashes(REPLICA_DEFAULT_TIME_ZONE),
-            'debug_mode'                    =>  self::_whitespace_slashes(REPLICA_DEBUG_MODE),
+            'debug_mode'                    =>  is_bool(REPLICA_DEBUG_MODE) ? REPLICA_DEBUG_MODE : false,
             'ext'                           =>  '.'.self::_whitespace_slashes(EXT),
+            'default_theme'                 =>  'default',
 
             #USER CUSTOMIZATION
 
@@ -1393,12 +1409,16 @@ class Replica
             #CORE SYSTEM CONFIG : METHOD HELPERS
 
 
-            //Replica::Redirect_to();
+            //Replica::redirect_to();
 
             'redirect_to_error_tpl'        => self::_whitespace_slashes(REPLICA_THEME_ERRORS_TEMPLATE),
+
+
             'redirect_to_404_title'        => self::_whitespace_slashes(REPLICA_404_CUSTOM_ERROR_TITLE),
             'redirect_to_404_heading'      => self::_whitespace_slashes(REPLICA_404_CUSTOM_ERROR_HEADING),
             'redirect_to_404_message'      => self::_whitespace_slashes(REPLICA_404_CUSTOM_ERROR_MESSAGE),
+
+
             'redirect_to_403_title'        => self::_whitespace_slashes(REPLICA_403_CUSTOM_ERROR_TITLE),
             'redirect_to_403_heading'      => self::_whitespace_slashes(REPLICA_403_CUSTOM_ERROR_HEADING),
             'redirect_to_403_message'      => self::_whitespace_slashes(REPLICA_403_CUSTOM_ERROR_MESSAGE),

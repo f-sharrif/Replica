@@ -72,7 +72,12 @@
     |
     */
 
-    //By default its set to true, set it to false once you're ready to deploy your site to live server
+    //By default its set to true, set it to false once you're ready to deploy
+    // your site to live server
+
+    # ***NOTE** Must be boolean value of 'true' or 'false' otherwise debug mode
+    // is set to false by default
+
     define('REPLICA_DEBUG_MODE', true);  //default => true
 
     /*
@@ -103,14 +108,19 @@
     */
 
     // Custom Partial template file directory relative to themes root
+
     define('REPLICA_THEME_PARTIAL_DIR', 'includes');  // default =>includes
 
 
-    //specify your index page in your theme folder (index.php,default.php, main.php, root.php")
+    //specify your index page in your theme folder (index.php,default.php,
+    // main.php, root.php")
+
     define('REPLICA_THEME_DEFAULT_INDEX', 'default'); // default =>default
 
 
-    //please specify your 404 or 403 error templates location within the theme drectory
+    //please specify your 404 or 403 error templates location within the
+    // theme directory
+
     define('REPLICA_THEME_ERRORS_TEMPLATE', 'errors/default');  //default =>errors/default
 
 
@@ -164,7 +174,9 @@
     |
     */
 
-    //setting this doesn't force every page to be called with extension in fact, if valid page is called without this extension it will render
+    //setting this doesn't force every page to be called with extension in fact,
+    // if valid page is called without this extension it will render
+
     define('REPLICA_PAGE_EXTENSION', 'html');  //default =>html
 
 
@@ -224,9 +236,6 @@
      */
 
     define('REPLICA_CUSTOM_ASSETS_DIR', 'assets');  //default =>assets
-
-
-
 
      /*
      |--------------------------------------------------------------------------
@@ -290,7 +299,9 @@
     */
 
 
-    //Location of system core modules classes must be with your defined core directory
+    //Location of system core modules classes must be with your
+    // defined core directory
+
     define('REPLICA_CUSTOM_MODULES_DIR', 'modules'); //default =>core/modules
 
     //Location of the system core Replica Class
