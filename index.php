@@ -72,7 +72,12 @@
     |
     */
 
-    //By default its set to true, set it to false once you're ready to deploy your site to live server
+    //By default its set to true, set it to false once you're ready to deploy
+    // your site to live server
+
+    # ***NOTE** Must be boolean value of 'true' or 'false' otherwise debug mode
+    // is set to false by default
+
     define('REPLICA_DEBUG_MODE', true);  //default => true
 
     /*
@@ -103,14 +108,19 @@
     */
 
     // Custom Partial template file directory relative to themes root
+
     define('REPLICA_THEME_PARTIAL_DIR', 'includes');  // default =>includes
 
 
-    //specify your index page in your theme folder (index.php,default.php, main.php, root.php")
+    //specify your index page in your theme folder (index.php,default.php,
+    // main.php, root.php")
+
     define('REPLICA_THEME_DEFAULT_INDEX', 'default'); // default =>default
 
 
-    //please specify your 404 or 403 error templates location within the theme drectory
+    //please specify your 404 or 403 error templates location within the
+    // theme directory
+
     define('REPLICA_THEME_ERRORS_TEMPLATE', 'errors/default');  //default =>errors/default
 
 
@@ -164,8 +174,44 @@
     |
     */
 
-    //setting this doesn't force every page to be called with extension in fact, if valid page is called without this extension it will render
+    //setting this doesn't force every page to be called with extension in fact,
+    // if valid page is called without this extension it will render
+
     define('REPLICA_PAGE_EXTENSION', 'html');  //default =>html
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | DEFAULT ERRORS CUSTOMIZATION
+    |--------------------------------------------------------------------------
+    | Here are list of error types defined in replica by default,
+    | this settings will allow you to customize this output errors
+    |
+    |
+    */
+
+    #CUSTOMIZE 404 AND 403 ERRORS
+
+    //Window title for the 404 error page
+    define('REPLICA_404_CUSTOM_ERROR_TITLE', 'Error 404 File Not Found'); //default => Error 404 File Not Found
+
+    //Page header
+    define('REPLICA_404_CUSTOM_ERROR_HEADING', '404');  //default => 404
+
+    //Page message
+    define('REPLICA_404_CUSTOM_ERROR_MESSAGE',  'Woops, page not found.');  //default => Woops, page not found
+
+    //Window title for the 403 error page
+    define('REPLICA_403_CUSTOM_ERROR_TITLE', 'Error 403 Forbidden Access');  //default => Error 403 Forbidden Access
+
+    //Page header
+    define('REPLICA_403_CUSTOM_ERROR_HEADING', '403');  // default => 403
+
+    //Page message
+    define('REPLICA_403_CUSTOM_ERROR_MESSAGE',  "Woops, you're totally forbidden from here"); // default => Woops, you're totally forbidden from here
+
+
 
 
     /*
@@ -176,6 +222,7 @@
     | system directories locations and names.
     |
     */
+
 
 
      /*
@@ -189,9 +236,6 @@
      */
 
     define('REPLICA_CUSTOM_ASSETS_DIR', 'assets');  //default =>assets
-
-
-
 
      /*
      |--------------------------------------------------------------------------
@@ -255,7 +299,9 @@
     */
 
 
-    //Location of system core modules classes must be with your defined core directory
+    //Location of system core modules classes must be with your
+    // defined core directory
+
     define('REPLICA_CUSTOM_MODULES_DIR', 'modules'); //default =>core/modules
 
     //Location of the system core Replica Class
@@ -293,7 +339,7 @@
     define('DS', DIRECTORY_SEPARATOR);
 
     //System file extension
-    define('EXT', '.php');
+    define('EXT', 'php');
 
     /*
     |--------------------------------------------------------------------------
@@ -317,9 +363,9 @@
     |
     */
 
-    if(is_readable(REPLICA_CUSTOM_CORE_DIR . DS . REPLICA_CUSTOM_CLASS_FILE_NAME . EXT))
+    if(is_readable(REPLICA_CUSTOM_CORE_DIR . DS . REPLICA_CUSTOM_CLASS_FILE_NAME .'.'.EXT))
     {
-        require_once REPLICA_CUSTOM_CORE_DIR . DS . REPLICA_CUSTOM_CLASS_FILE_NAME . EXT;
+        require_once REPLICA_CUSTOM_CORE_DIR . DS . REPLICA_CUSTOM_CLASS_FILE_NAME .'.'. EXT;
 
     }else
     {

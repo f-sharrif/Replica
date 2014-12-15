@@ -19,6 +19,6 @@ if(!defined('REPLICA')) {die('Sorry direct access to this file not allowed');}
 </div>
 </div>
 
-<?=Replica::assets_load('js',['js/script.js']);?>
+<?=Replica::al('js',['js/script.js']);?>
 </body>
 </html>
