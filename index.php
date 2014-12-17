@@ -177,6 +177,8 @@
     //setting this doesn't force every page to be called with extension in fact,
     // if valid page is called without this extension it will render
 
+    ### PLEASE NOTE: do not add dot(.) in front of the extension
+
     define('REPLICA_PAGE_EXTENSION', 'html');  //default =>html
 
 
@@ -287,6 +289,28 @@
 
     define('REPLICA_CUSTOM_DATA_WIDGETS_DIR', 'widgets');  //Default =>widgets
 
+    /*
+    |--------------------------------------------------------------------------
+    |              BASIC LOGIN SYSTEM : Replica SimpleAuth
+    |--------------------------------------------------------------------------
+    |****** DON'T FORGET TO RENAME THE ACTUAL DIRECTORY ****
+    |
+    |   Replica SimpleAuth is basic authentication system that comes with
+    |   Replica class as the default authentication system. All data are saved
+    |   in flat file, the system can handle multiple users and many different
+    |   roles. Defined below are the customizable configuration option for
+    |   Replica SimpleAuth module.
+    |
+    |
+    */
+
+    define('REPLICA_CUSTOM_MODULES_SIMPLEAUTH_DIR', 'simpleauth');  //Default =>simpleauth
+
+    //Users list file name
+    define('REPLICA_CUSTOM_MODULES_SIMPLEAUTH_FILE_DB', 'auth'); //Default => auth
+
+
+
 
     /*
     |--------------------------------------------------------------------------
@@ -332,11 +356,33 @@
      | *** DO NOT MODIFY ANYTHING BEYOND THIS POINT ***
      |-------------------------------------------------------------------------
      |
+     | PLEASE DO NOT MODIFY ANY OF THE FOLLOWING CONSTANTS, THEY ARE THE
+     | BUILDING BLOCK OF THE APPLICATION, ANY MODIFICATION TO THE BELOW SETTINGS
+     | CAN AND WILL BREAK THE SYSTEM.
+     |
+     |      ---------------------------------------------------
+     |      ## DEFAULT SETTINGS FOR THIS IMPORTANT CONSTANTS ##
+     |      ---------------------------------------------------
+     |
+     |      #OS Directory separator short name
+     |      -----------------------------------
+     |      define('DS', DIRECTORY_SEPARATOR);
+     |
+     |      #system file extension
+     |     ------------------------------------
+     |      define('EXT','php');
+     |
+     |     #System root directory
+     |     ------------------------------------
+     |      define('REPLICA_ROOT_DIR', __DIR__.DS);
+     |
      |
      */
 
     //OS Directory separator short name
     define('DS', DIRECTORY_SEPARATOR);
+
+    ### PLEASE NOTE: Do not add dot(.) in front of the extension
 
     //System file extension
     define('EXT', 'php');
@@ -352,6 +398,8 @@
     |
     */
 
+
+    ### DO NOT CHANGE THIS, IS THE STARTING POINT FOR THE APP TO WORK ###
     define('REPLICA_ROOT_DIR', __DIR__ . DS);
 
     /*
@@ -382,3 +430,4 @@
     */
 
     $app->run();
+

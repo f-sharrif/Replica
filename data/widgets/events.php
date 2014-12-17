@@ -20,7 +20,7 @@ return [
         'contact_name'  => 'Sharif',
         'contact_email' => 'hello@sharif.co'
     ],
-    'new_years_hackthon' => [
+    'new_years_hackthon2' => [
         'title'         => 'New Years Hackaton',
         'date'          => 'January 1, 2015 12:00 A.M',
         'description'   => '<p>Will it destroy the world if we shutdown the internet for 15 seconds, how about 15 minutes or perhaps 15 hours WOAH - on my dead body</p>',
@@ -48,7 +48,7 @@ return [
         'contact_name'  => 'Sharif',
         'contact_email' => 'hello@sharif.co'
     ],
-    'new_years_hackthon2' => [
+    'new_years_hackthon22' => [
         'title'         => 'New Years Hackaton',
         'date'          => 'January 1, 2015 12:00 A.M',
         'description'   => '<p>Will it destroy the world if we shutdown the internet for 15 seconds, how about 15 minutes or perhaps 15 hours WOAH - on my dead body</p>',

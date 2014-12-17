@@ -1,32 +1,36 @@
 <?php
 
-    /*
-     * ----------------------------------------------------------------------------------------------------------------
-     * # PACKAGE INFORMATION
-     * ----------------------------------------------------------------------------------------------------------------
-     *
-     * @package: Replica
-     * @author: Abdikadir Adan (Sharif)  -url [http://sharif.co] -Email [hello@sharif.co]
-     * @url: http://replica.sharif.co
-     * @author: -Github [sp01010011]
-     * @filesource: core/Replica.php
-     *
-     * ----------------------------------------------------------------------------------------------------------------
-     * # ABOUT THE PACKAGE
-     * ----------------------------------------------------------------------------------------------------------------
-     *
-     * Replica is single class php based templating engine developed with designers that
-     * works on smaller web  projects in mind. Replica allows the designer to
-     * quickly develop a functional file based dynamic website. Most Importantly, Replica
-     * is built with flexibility, customization  and ease of use being the priority, therefore, designer / developer
-     * decides what data to show, how to show it and where to show it. Your design not only frontend
-     * but also the data structure and how that data is ported to your design.
-     *
-     * All configurations and customizations are done in the index.php, and throw the Replica class in the
-     * mix and you're ready building a sophisticated website for your clients.
-     *
-     */
+/*
+ * ----------------------------------------------------------------------------------------------------------------
+ * # PACKAGE INFORMATION
+ * ----------------------------------------------------------------------------------------------------------------
+ *
+ * @package: Replica
+ * @author: Abdikadir Adan (Sharif)  -url [http://sharif.co] -Email [hello@sharif.co]
+ * @url: http://replica.sharif.co
+ * @author: -Github [sp01010011]
+ * @filesource: core/Replica.php
+ *
+ * ----------------------------------------------------------------------------------------------------------------
+ * # ABOUT THE PACKAGE
+ * ----------------------------------------------------------------------------------------------------------------
+ *
+ * Replica is single class php based templating engine developed with designers that
+ * works on smaller web  projects in mind. Replica allows the designer to
+ * quickly develop a functional file based dynamic website. Most Importantly, Replica
+ * is built with flexibility, customization  and ease of use being the priority, therefore, designer / developer
+ * decides what data to show, how to show it and where to show it. Your design not only frontend
+ * but also the data structure and how that data is ported to your design.
+ *
+ * All configurations and customizations are done in the index.php, and throw the Replica class in the
+ * mix and you're ready building a sophisticated website for your clients.
+ *
+ */
 
+
+/**
+ * Class Replica
+ */
 class Replica
 {
 
@@ -47,23 +51,23 @@ class Replica
 
     private
 
-            //Default page to load if no request is made
-            $_page = 'index',
+        //Default page to load if no request is made
+        $_page = 'index',
 
-            //Custom page template
-            $_template = "",
+        //Custom page template
+        $_template = "",
 
-            //List of template data assigned via magic method set
-            $_template_data = [],
+        //List of template data assigned via magic method set
+        $_template_data = [],
 
-            //set flag of resource existence
-            $_request_exists = false,
+        //set flag of resource existence
+        $_request_exists = false,
 
-            //List of available modules
-            $_module_list =[],
+        //List of available modules
+        $_module_list =[],
 
-            //list of active modules
-            $_active_modules =[];
+        //list of active modules
+        $_active_modules =[];
 
     private static
 
@@ -100,15 +104,15 @@ class Replica
 
     public function run()
     {
-       /*
-       |--------------------------------------------------------------------------
-       | Bootstrap the Application
-       |--------------------------------------------------------------------------
-       |
-       | Check to make sure no error loading the configuration file into the the
-       | system and bootstrap the application
-       |
-       */
+        /*
+        |--------------------------------------------------------------------------
+        | Bootstrap the Application
+        |--------------------------------------------------------------------------
+        |
+        | Check to make sure no error loading the configuration file into the the
+        | system and bootstrap the application
+        |
+        */
 
         #< START OF SYSTEM CONFIGURATION
 
@@ -124,37 +128,37 @@ class Replica
         */
 
 
-       /*
-       |--------------------------------------------------------------------------
-       | SET SYSTEM DEFAULT TIME ZONE
-       |--------------------------------------------------------------------------
-       |
-       | Set the default system timezone in case php date time functions used
-       |
-       */
+        /*
+        |--------------------------------------------------------------------------
+        | SET SYSTEM DEFAULT TIME ZONE
+        |--------------------------------------------------------------------------
+        |
+        | Set the default system timezone in case php date time functions used
+        |
+        */
 
         date_default_timezone_set(self::get_system('timezone'));
 
-       /*
-       |--------------------------------------------------------------------------
-       | DEFINED ALL THE CORE CONSTANTS
-       |--------------------------------------------------------------------------
-       |    Define list of core constants that are needed to interconnect
-       |    the system
-       |
-       */
+        /*
+        |--------------------------------------------------------------------------
+        | DEFINED ALL THE CORE CONSTANTS
+        |--------------------------------------------------------------------------
+        |    Define list of core constants that are needed to interconnect
+        |    the system
+        |
+        */
 
         //If this Constant is not defined the system will not render pages, do not remove
         if(!defined('REPLICA'))         define('REPLICA', self::get_system('system_state'));
 
-      /*
-      |--------------------------------------------------------------------------
-      | DEBUG MODE
-      |--------------------------------------------------------------------------
-      |
-      |    If the debug mode is set to true, get all possible errors shown
-      |
-      */
+        /*
+        |--------------------------------------------------------------------------
+        | DEBUG MODE
+        |--------------------------------------------------------------------------
+        |
+        |    If the debug mode is set to true, get all possible errors shown
+        |
+        */
         if (self::get_system('debug_mode')) {
 
             //Set Error Display
@@ -214,11 +218,11 @@ class Replica
             //Show debug bar
             echo "<div style='width:100%;  overflow: hidden; color: #fff; height: 25px; padding: 5px; margin-bottom: 45px; background-color:#e74c3c; position: absolute; top:0; left: 0;'> <strong style='color: #fff; padding-right: 5px; border-right: 1px solid #fff;'> DEBUG MODE</strong>";
 
-                //Show link to system configuration
-                if(self::input('get','debug')!="show_system_config_settings")
-                {
-                    echo "<a href='?debug=show_system_config_settings' style='text-decoration: none; color:#fff; font-size: 12px;  padding: 4px 45px 4px 4px; float: right;'> Show System Configuration Settings</a>";
-                }
+            //Show link to system configuration
+            if(self::input('get','debug')!="show_system_config_settings")
+            {
+                echo "<a href='?debug=show_system_config_settings' style='text-decoration: none; color:#fff; font-size: 12px;  padding: 4px 45px 4px 4px; float: right;'> Show System Configuration Settings</a>";
+            }
 
             echo "</div>";
 
@@ -316,11 +320,14 @@ class Replica
     |--------------------------------------------------------------------------
     |
     | The route method is perhaps on of the most important method in Replica, it
-    | analysis the uri collections, verifies the existence of the requested resources,
+    | analyzes the uri collections, verifies the existence of the requested resources,
     | and throwing in error when no resources in found with the requested uri
     |
     */
 
+    /**
+     * @return bool|string
+     */
     private function route()
     {
         //assign the page location to its default setting
@@ -343,36 +350,36 @@ class Replica
 
                 //Check to see if the current iterant is the last in the collection
                 if($i+1 == count($ur))
-                 {
+                {
 
-                 //Since this is the last in the collection, we know its a page ans there is possibility it might have extension
-                   $page_eval = explode('.', self::_whitespace_slashes($ur[$i]));
+                    //Since this is the last in the collection, we know its a page ans there is possibility it might have extension
+                    $page_eval = explode('.', self::_whitespace_slashes($ur[$i]));
 
-                 //lets check if has exploded into name and extension
-                   if(count($page_eval)==2)
-                   {
-                       //Evaluate to see if the extension is the same as the Replica Page Extension configured in the settings
-                       if(strtolower(end($page_eval))===self::get_system('page_extension'))
-                       {
-                           //If it evaluated correctly process the file according to this
-                           $request.=DS.prev($page_eval);
-                       }
+                    //lets check if has exploded into name and extension
+                    if(count($page_eval)==2)
+                    {
+                        //Evaluate to see if the extension is the same as the Replica Page Extension configured in the settings
+                        if(strtolower(end($page_eval))===self::get_system('page_extension'))
+                        {
+                            //If it evaluated correctly process the file according to this
+                            $request.=DS.prev($page_eval);
+                        }
 
-                   }else
-                   {
-                       //Otherwise, there was no extension therefore just process as is
-                       $request.=DS.$ur[$i];
-                   }
+                    }else
+                    {
+                        //Otherwise, there was no extension therefore just process as is
+                        $request.=DS.$ur[$i];
+                    }
 
-               }elseif($i==0)
-               {
-                   //If the request collections are more than one, get the first one and process separately
-                       $request.=$ur[$i];
-               }else
-               {
-                   //Process everything else with proper os directory separator in between
-                   $request.=DS.$ur[$i];
-               }
+                }elseif($i==0)
+                {
+                    //If the request collections are more than one, get the first one and process separately
+                    $request.=$ur[$i];
+                }else
+                {
+                    //Process everything else with proper os directory separator in between
+                    $request.=DS.$ur[$i];
+                }
 
 
             }
@@ -608,8 +615,6 @@ class Replica
         return trim($var, "\x00..\x20/");
     }
 
-
-
     /*
     |--------------------------------------------------------------------------
     | _is_theme_dir();
@@ -630,11 +635,11 @@ class Replica
 
         $replica_required_theme_contents =
             [
-               //The theme must have default page as defined in index.php
+                //The theme must have default page as defined in index.php
 
                 self::get_system('theme_index'),       // REPLICA_THEME_DEFAULT_INDEX
 
-               //CSS directory must be present as defined in index.php
+                //CSS directory must be present as defined in index.php
 
                 self::get_system('theme_css_dir'),     //  REPLICA_THEME_CSS_DIR
 
@@ -714,6 +719,19 @@ class Replica
 
     # REPLICA NON STATIC
 
+    /*
+   |--------------------------------------------------------------------------
+   | $obj->get_theme_config();
+   |--------------------------------------------------------------------------
+   |
+   | Returns current theme configurations setting
+   |
+   */
+
+    /**
+     * @param $format
+     * @return array|mixed|null
+     */
     public function get_theme_config($format)
     {
         if ($this->theme_config) {
@@ -729,6 +747,26 @@ class Replica
 
         return [];
     }
+
+    /*
+   |--------------------------------------------------------------------------
+   | $obj->tcong($f);
+   |--------------------------------------------------------------------------
+   |
+   | Alias to $obj->get_theme_config($format);
+   |
+   */
+
+    /**
+     * @param $f : format
+     * @return array|mixed|null
+     */
+    public function tconf($f)
+    {
+        return $this->get_theme_config($f);
+    }
+
+
 
     # REPLICA STATICALLY ACCESSIBLE PUBLIC METHODS
 
@@ -806,9 +844,9 @@ class Replica
     */
 
     /**
-     * @param $t
-     * @param $p
-     * @param array $ce
+     * @param $t : type
+     * @param $p : path
+     * @param array $ce  :custom exclusions list
      * @return array
      */
     public static function sf($t, $p, $ce=[])
@@ -826,6 +864,11 @@ class Replica
     */
 
 
+    /**
+     * @param $type
+     * @param $path
+     * @return array|mixed|null
+     */
     public static function widget_load($type,$path)
     {
 
@@ -865,8 +908,8 @@ class Replica
     */
 
     /**
-     * @param $t
-     * @param $p
+     * @param $t : type
+     * @param $p : path
      * @return array|mixed|null
      */
     public static function wl($t, $p)
@@ -905,7 +948,7 @@ class Replica
                 switch ($location)
                 {
 
-                   //Check if is 404
+                    //Check if is 404
                     case '404':
 
                         //Force http header to send real error
@@ -923,10 +966,10 @@ class Replica
                         //make the display for the errors page
                         $replica->make(self::get_system('redirect_to_error_tpl'));
 
-                       //terminate the process
+                        //terminate the process
                         exit;
 
-                   //check for 403
+                    //check for 403
                     case '403':
 
                         //force http header to send real 403 error
@@ -973,7 +1016,7 @@ class Replica
     */
 
     /**
-     * @param $l
+     * @param $l : location
      * @return bool
      */
     public static function rt($l)
@@ -1015,42 +1058,42 @@ class Replica
         $default =(self::_check_file(CURRENT_THEME_DIR.self::get_system('theme_partial').DS.$partial.self::get_system('ext'))) ? CURRENT_THEME_DIR.self::get_system('theme_partial').DS.$partial.self::get_system('ext') : null;
 
         #TEST TO SEE IF SPECIFIC PART IS REQUESTED
-            if (in_array($type, self::get_system('include_partial_header')))
-            {
+        if (in_array($type, self::get_system('include_partial_header')))
+        {
 
-                $title = isset($params['title']) ? $params['title'] : self::get_system('meta_title');
-                $meta_description = isset($params['meta_description']) ? $params['meta_description'] : self::get_system('meta_desc');
-                $meta_keywords = isset($params['meta_keywords']) ? $params['meta_keywords'] : self::get_system('meta_tags');
+            $title = isset($params['title']) ? $params['title'] : self::get_system('meta_title');
+            $meta_description = isset($params['meta_description']) ? $params['meta_description'] : self::get_system('meta_desc');
+            $meta_keywords = isset($params['meta_keywords']) ? $params['meta_keywords'] : self::get_system('meta_tags');
 
-                $request = $default;
-                #HEADER HAS BEEN REQUESTED
+            $request = $default;
+            #HEADER HAS BEEN REQUESTED
 
-            } elseif (in_array($type, self::get_system('include_partial_sidebar')))
-            {
+        } elseif (in_array($type, self::get_system('include_partial_sidebar')))
+        {
 
-                //Since the designer can choose to put the sidebar in different directory lets look at that dir
-                $request=(self::_check_file(CURRENT_THEME_DIR.self::get_system('theme_sidebars').DS.$partial.self::get_system('ext'))) ? CURRENT_THEME_DIR.self::get_system('theme_sidebars').DS.$partial.self::get_system('ext') : null;
+            //Since the designer can choose to put the sidebar in different directory lets look at that dir
+            $request=(self::_check_file(CURRENT_THEME_DIR.self::get_system('theme_sidebars').DS.$partial.self::get_system('ext'))) ? CURRENT_THEME_DIR.self::get_system('theme_sidebars').DS.$partial.self::get_system('ext') : null;
 
-                #SIDEBAR HAS BEEN REQUESTED
+            #SIDEBAR HAS BEEN REQUESTED
 
-            } elseif (in_array($type, self::get_system('include_partial_widget')))
-            {
+        } elseif (in_array($type, self::get_system('include_partial_widget')))
+        {
 
-                //Now since widgets can also have their own custom directories lets check the widget directory
-                $request=(self::_check_file(CURRENT_THEME_DIR.self::get_system('theme_widgets').DS.$partial.self::get_system('ext'))) ? CURRENT_THEME_DIR.self::get_system('theme_widgets').DS.$partial.self::get_system('ext') : null;
+            //Now since widgets can also have their own custom directories lets check the widget directory
+            $request=(self::_check_file(CURRENT_THEME_DIR.self::get_system('theme_widgets').DS.$partial.self::get_system('ext'))) ? CURRENT_THEME_DIR.self::get_system('theme_widgets').DS.$partial.self::get_system('ext') : null;
 
-                #WIDGETS HAS BEEN REQUESTED
-            }else
-            {
-                //If none of the above partials are defined, return the partials directory as default
-                $request= $default;
-            }
+            #WIDGETS HAS BEEN REQUESTED
+        }else
+        {
+            //If none of the above partials are defined, return the partials directory as default
+            $request= $default;
+        }
 
-            //Check to see to make sure there is value within the result
-            if(!is_null($request))
+        //Check to see to make sure there is value within the result
+        if(!is_null($request))
 
-                //if there is a result then return the data of the request file
-                return require_once $request;
+            //if there is a result then return the data of the request file
+            return require_once $request;
 
         //otherwise return empty result
         return $request;
@@ -1065,9 +1108,9 @@ class Replica
     */
 
     /**
-     * @param $t
-     * @param $p
-     * @param array $pr
+     * @param $t :type
+     * @param $p : partial
+     * @param array $pr : parameters
      * @return mixed|null
      */
     public static function ip($t, $p, $pr=[])
@@ -1124,12 +1167,12 @@ class Replica
                     if(in_array($type,self::get_system('assets_load_css')))
                     {
                         //If the request type is stylesheet only deal with css and assign all of the to the dumper
-                        $auto_dumper.='<link rel="stylesheet" href="' . $url_separator . self::get_system('assets_dir_name') . '/' . CURRENT_THEME_NAME . '/' . $asset . '">' . PHP_EOL;
+                        $auto_dumper.='<link rel="stylesheet" href="' . $url_separator . self::get_system('assets_dir_name') . '/' . CURRENT_THEME_NAME . '/' . $asset .'">' . PHP_EOL;
 
                     }elseif(in_array($type,self::get_system('assets_load_js')))
                     {
                         //Or if the request type is javascript assign all verified javascript files to the dumper
-                        $auto_dumper.='<script src="' . $url_separator . self::get_system('assets_dir_name') . '/' . CURRENT_THEME_NAME . '/' . $asset . '"> </script>' . PHP_EOL;
+                        $auto_dumper.='<script src="' . $url_separator . self::get_system('assets_dir_name') . '/' . CURRENT_THEME_NAME . '/' . $asset .'"> </script>' . PHP_EOL;
                     }
                 }
             }
@@ -1144,18 +1187,18 @@ class Replica
     }
 
 
-     /*
-     |--------------------------------------------------------------------------
-     | Replica::al('t',[])
-     |--------------------------------------------------------------------------
-     | Shorter alias for Replica::asset_load('type',[assets])
-     |
-     */
+    /*
+    |--------------------------------------------------------------------------
+    | Replica::al('t',[])
+    |--------------------------------------------------------------------------
+    | Shorter alias for Replica::asset_load('type',[assets])
+    |
+    */
 
 
     /**
-     * @param $t
-     * @param array $a
+     * @param $t : type
+     * @param array $a : assets
      * @return null|string
      */
     public static  function al($t, $a=[])
@@ -1227,11 +1270,12 @@ class Replica
     */
 
     /**
-     * @param $v
+     * @param $v : variable to escape
      * @return string
      */
     public static function e($v)
     {
+        //return the scape method
         return self::escape($v);
     }
 
@@ -1270,6 +1314,27 @@ class Replica
 
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Replica::in('get', 'query');
+    |--------------------------------------------------------------------------
+    | Alias to Replica::input()
+    |
+    */
+
+    /**
+     * @param string $t : type
+     * @param $v : variable
+     * @return string
+     */
+    public static function in($t='post', $v)
+    {
+        //return the input method
+        return self::input($t, $v);
+    }
+
+
     /*
     |--------------------------------------------------------------------------
     | Replica::dd($var);
@@ -1281,9 +1346,9 @@ class Replica
     public static function dd($var)
     {
 
-            echo "<div><pre>";
-                var_dump($var);
-            echo "</pre></div>";
+        echo "<div><pre>";
+        var_dump($var);
+        echo "</pre></div>";
 
     }
 
@@ -1304,29 +1369,29 @@ class Replica
     {
 
         //Test to see if the array key exists in the system configuration
-       while($config=array_key_exists($request, self::_system_configuration_settings()))
-       {
-           //if the result of the test comes true
-           if($config)
+        while($config=array_key_exists($request, self::_system_configuration_settings()))
+        {
+            //if the result of the test comes true
+            if($config)
 
-               //return the value for that key
-               return self::_system_configuration_settings()[$request];
-       }
+                //return the value for that key
+                return self::_system_configuration_settings()[$request];
+        }
 
         //otherwise if the key doesn't exist than return an empty array.
         return [];
     }
 
-   /*
-   |--------------------------------------------------------------------------
-   | Replica::sg('config')
-   |--------------------------------------------------------------------------
-   | Shorter alias for Replica::get_system('configuration')
-   |
-   */
+    /*
+    |--------------------------------------------------------------------------
+    | Replica::sg('config')
+    |--------------------------------------------------------------------------
+    | Shorter alias for Replica::get_system('configuration')
+    |
+    */
 
     /**
-     * @param $r
+     * @param $r : request
      * @return array
      */
     public static  function gs($r)
@@ -1335,13 +1400,479 @@ class Replica
         return self::get_system($r);
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Replica::menu_gen(array)
+    |--------------------------------------------------------------------------
+    | Generates upto three label dropdown menu from single to multi dimensional
+    | array data
+    |
+    */
+
+
+    public static function menu_gen($data=[])
+    {
+
+        //Make sure there is at least one item in the array
+        if(count($data)>=1)
+        {
+
+            //Initialize the nav var with ul
+            $nav ="<ul>";
+
+            //loop through the data
+            foreach($data as $label=>$menu)
+            {
+
+                //check to see if the current item is not array
+                if(!is_array($menu))
+                {
+
+                    //If it is not an array than it must just a link so add to link
+                    $nav.='<li><a href="'.$menu.'">'.$label.'</a></li>';
+
+
+                    //double check what was not added to link list is array
+                }elseif(is_array($menu))
+                {
+                    $url = "#";
+                    $get_label_url = explode('@', $label);
+
+                    if(count($get_label_url)==2)
+                    {
+                        $url = end($get_label_url);
+                        $label = prev($get_label_url);
+
+                    }
+
+
+                    //Now prepare nav for sub ul ul>li>ul
+                    $nav.='<li><a href="'.$url.'">'.$label.'</a> <ul>';
+
+                    //Loop through
+                    foreach($menu as $clabel=>$cmenu)
+                    {
+
+                        //Verify the founded is not an array
+                        if(!is_array($cmenu))
+                        {
+                            //add to link collections
+                            $nav.='<li><a href="'.$cmenu.'">'.$clabel.'</a></li>';
+
+
+                            //Verify again for the third label
+                        }elseif(is_array($cmenu))
+                        {
+
+                            $url = "#";
+                            $get_label_url = explode('@', $clabel);
+
+                            if(count($get_label_url)==2)
+                            {
+                                $url = end($get_label_url);
+                                $clabel = prev($get_label_url);
+
+                            }
+
+
+                            //initilize a collection sub ul ul>li>ul>li
+                            $nav.='<li><a href="'.$url.'">'.$clabel.'</a> <ul>';
+
+
+                            //loop through the gran children
+                            foreach($cmenu as $glabel=>$gmenu)
+                            {
+                                //just before adding to collection verify it is not array
+                                if(!is_array($gmenu))
+                                {
+
+                                    //Add to the collection
+                                    $nav.='<li><a href="'.$gmenu.'">'.$glabel.'</a></li>';
+                                }
+                            }
+
+                            //Close the grand children
+                            $nav.="</ul></li>";
+                        }
+
+                        //Unset the grandchild
+
+                        unset($gmenu);
+
+                        //unset the child menu
+
+                        unset($cmenu);
+                    }
+
+                    //Close children
+                    $nav.="</ul></li>";
+                }
+
+                //unset the menu
+                unset($menu);
+            }
+
+            //Close parent
+            $nav.="</ul>";
+
+            //return the result
+            return $nav;
+        }
+
+        //If there is nothing passed don't waste resource
+        return false;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Replica::mg(array)
+    |--------------------------------------------------------------------------
+    |
+    | Alias to Replica::menu_gen([]);
+    |
+    */
+
+    /**
+     * @param array $d : data
+     * @return bool|string
+     */
+    public static function mg($d=[])
+    {
+        //get menu generator system
+        return self::menu_gen($d);
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Replica::token('action', $token);
+    |--------------------------------------------------------------------------
+    |
+    | Generates 32bit token key to secure forms and other things
+    |
+    */
+
+    /**
+     * @param $action
+     * @param $token
+     * @return bool|string
+     */
+    public static function token($action, $token)
+    {
+        switch(strtolower($action))
+        {
+            //If action to generate new toke
+            case self::get_system('token_case_generate'):
+
+                //Return new token
+                return $_SESSION['token'] = base64_encode(openssl_random_pseudo_bytes(32));
+
+            //Check is to verify the existing token
+            case self::get_system('token_case_check'):
+
+                //if the existing token is equal to the in question then return true and delete
+                if($token == $_SESSION['token'])
+                {
+                    //Unset the current toke
+                    unset($_SESSION['token']);
+
+                    //return true
+                    return true;
+                }
+
+                //Otherwise return false
+                return false;
+        }
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Replica::tk('action', 'token');
+    |--------------------------------------------------------------------------
+    |
+    | Alias to Replica::token();
+    |
+    */
+
+
+    /**
+     * @param $a : action
+     * @param $t : token
+     * @return bool|string
+     */
+    public static function tk($a, $t)
+    {
+        //return the token method
+        return self::token($a, $t);
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Replica::session('action',[])
+    |--------------------------------------------------------------------------
+    | sessions method that will handle the session creation, destruction,  and
+    | flashing messages
+    |
+    */
+
+
+    /**
+     * @param $action
+     * @param array $param
+     * @return bool|string
+     */
+    public static function session($action, $param=[])
+    {
+        //Switch on the action
+        switch(strtolower($action))
+        {
+
+            //put session
+            case self::get_system('session_case_put'):
+
+                //put new session
+                return $_SESSION[$param['name']]=$param['value'];
+
+            //Check to see if the session exists
+            case self::get_system('session_case_exists'):
+
+                //if session exists return true or false if doesn't
+                return (isset($_SESSION[$param['name']])) ? true: false;
+
+            //get session
+            case self::get_system('session_case_get'):
+
+                //get session
+                return $_SESSION[$param['name']];
+
+            //delete session
+            case self::get_system('session_case_delete'):
+
+                //check it exists before deleting
+                if(self::session('exists',[$param['name']]))
+                {
+                    //unset the session
+                    unset($_SESSION[$param['name']]);
+                }
+
+                break;
+
+            //flash message
+            case self::get_system('session_case_flash'):
+
+                //Check to see if the session exists
+                if(self::session('exists',$param['name']))
+                {
+                    //assign the current content from session to variable
+                    $session = self::session('get', $param['name']);
+
+                    //delete the session key
+                    self::session('delete',$param['name']);
+
+                    //return the data stored in the variable
+                    return $session;
+
+                }else
+                {
+                    //otherwise put the message
+                    return self::session('put', $param['content']);
+                }
+
+                return '';
+
+            //destroy all set sessions
+            case self::get_system('session_case_destroy'):
+
+                foreach($_SESSION as $destroy)
+                {
+                    unset($destroy);
+                }
+
+                return session_destroy();
+
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Replica::ses()
+    |--------------------------------------------------------------------------
+    |
+    | Alias to Replica::session()
+    |
+    */
+
+    /**
+     * @param $a : action
+     * @param array $p : parameters
+     * @return bool|string
+     */
+    public static function ses($a, $p=[])
+    {
+        //return self session method
+        return self::session($a, $p);
+    }
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Replica::simple_auth()
+    |--------------------------------------------------------------------------
+    | Very basic authentication system handler if the developer or designer
+    | wants to incorporate simple authentication system, this could handle
+    | is pretty well.
+    |
+    |
+    */
+
+
+    /**
+     * @param $username
+     * @param $password
+     * @return bool
+     */
+    public static function simple_auth($username, $password)
+    {
+        //Load list of the users
+        $load_users_list = self::_include_file(self::get_system('user_authorized_list'));
+        echo "<pre>", print_r($load_users_list),"</pre>";
+
+        if(is_array($load_users_list))
+        {
+            //if the user list is properly loaded, loop through
+
+            foreach($load_users_list as $user_id=>$user_data)
+            {
+
+                // compare the username and password for the user
+                if($user_data['username']==$username && $user_data['password']==$password)
+                {
+
+                    //If found matching username and password log user in
+
+                    self::session('put', ['name'=>'id', 'value'=>$user_id]);
+
+                    //Assign each key aside from password to session key
+
+                    foreach($user_data as $k=>$v)
+                    {
+                        //skip the password key
+                        if($k=="password") continue;
+
+                        //assign every key to session
+                        self::session('put', ['name'=>$k, 'value'=>$v]);
+
+                    }
+                    // terminate the the loop
+
+                    return true;
+                }
+
+                //skip if the username do not match the result
+                if($user_data['username']!=$username) continue;
+
+            }
+        }
+
+        // the array list not loaded properly
+
+        return false;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Replica::user()
+    |--------------------------------------------------------------------------
+    |
+    | Alias to Replica::simple_auth()
+    |
+    */
+
+    /**
+     * @param $u : username
+     * @param $p : password
+     * @return bool
+     */
+    public static function user($u, $p)
+    {
+        //return self simple_auth() method
+        return self::simple_auth($u, $p);
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Replica::find_simple_auth_user()
+    |--------------------------------------------------------------------------
+    |
+    | Looks up and find the user data from  Replica SimpleAuth data
+    |
+    */
+
+    /**
+     * @param $id
+     * @return array
+     */
+    public static function find_simple_auth_user($id)
+    {
+        //Load the data from the list of authorized users
+        $list = self::_include_file(self::get_system('user_authorized_list'));
+
+        //Double check to make sure there is some data in the list
+        if(count($list)>=1)
+        {
+            //loop through the data
+            foreach($list as $user_id=>$user_data)
+            {
+                //skip any key that is not the same as the user
+                if($user_id!=$id) continue;
+
+                //if found a match with the requested user
+                if($user_id===$id)
+                {
+                    //return the user data
+                    return $user_data;
+                }
+            }
+        }
+
+        return [];
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Replica::find()
+    |--------------------------------------------------------------------------
+    |
+    | Alias to Replica::find_simple_auth_user();
+    |
+    */
+
+    /**
+     * @param $i : ID
+     * @return array
+     */
+    public static function find($i)
+    {
+        //return the data from find_simple_auth_user() method
+        return self::find_simple_auth_user($i);
+    }
+
+
+
     /*
    |--------------------------------------------------------------------------
    | self::_system_configuration_settings()
    |--------------------------------------------------------------------------
+   |
    | Holds array of the system configuration, formats user configurations e.g.
-   | removes whitespaces, slashes, sets to correct casings acts as single place
-   | to hold system wide configuration options.
+   | removes whitespaces, slashes, sets to correct casings acts as single point
+   | to manage the overhaul system configuration options.
    |
    */
 
@@ -1350,118 +1881,145 @@ class Replica
      */
     private static function _system_configuration_settings()
     {
-        return [
+        return
+            [
 
-            #USER SYSTEM SETTINGS
-            'timezone'                      =>  self::_whitespace_slashes(REPLICA_DEFAULT_TIME_ZONE),
-            'debug_mode'                    =>  is_bool(REPLICA_DEBUG_MODE) ? REPLICA_DEBUG_MODE : false,
-            'ext'                           =>  '.'.self::_whitespace_slashes(EXT),
-            'default_theme'                 =>  'default',
+                #USER SYSTEM SETTINGS
 
-            #USER CUSTOMIZATION
+                'timezone'                      =>  self::_whitespace_slashes(REPLICA_DEFAULT_TIME_ZONE),
+                'debug_mode'                    =>  is_bool(REPLICA_DEBUG_MODE) ? REPLICA_DEBUG_MODE : false,
+                'ext'                           =>  '.'.self::_whitespace_slashes(EXT),
+                'default_theme'                 =>  'default',
 
-            //Custom directory names ** NOT PATH JUST NAMES **
+                #USER CUSTOMIZATION
 
-            'core_dir_name'                 => self::_whitespace_slashes(REPLICA_CUSTOM_CORE_DIR),
-            'modules_dir_name'              => self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_DIR),
-            'assets_dir_name'               => self::_whitespace_slashes(REPLICA_CUSTOM_ASSETS_DIR),
-            'data_dir_name'                 => self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR),
+                //Custom directory names ** NOT PATH JUST NAMES **
 
-            'nav_dir_name'                  => self::_whitespace_slashes(REPLICA_CUSTOM_DATA_NAV_DIR),
-            'pages_dir_name'                => self::_whitespace_slashes(REPLICA_CUSTOM_DATA_PAGES_DIR),
-            'widgets_dir_name'              => self::_whitespace_slashes(REPLICA_CUSTOM_DATA_WIDGETS_DIR),
+                'core_dir_name'                 => self::_whitespace_slashes(REPLICA_CUSTOM_CORE_DIR),
+                'modules_dir_name'              => self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_DIR),
+                'assets_dir_name'               => self::_whitespace_slashes(REPLICA_CUSTOM_ASSETS_DIR),
+                'data_dir_name'                 => self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR),
 
-
-            # DIRECTORIES
-
-            //System
-            'path_to_root_dir'              => REPLICA_ROOT_DIR,
-            'path_to_core_dir'              => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_CORE_DIR) . DS,
-            'path_to_assets_dir'            => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_ASSETS_DIR) . DS,
-            'path_to_data_dir'              => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS,
-            'path_to_modules_dir'           => REPLICA_ROOT_DIR.  self::_whitespace_slashes(REPLICA_CUSTOM_CORE_DIR).DS.self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_DIR) . DS,
-
-            //Data
-            'path_to_pages_dir'             => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_PAGES_DIR) . DS,
-            'path_to_nav_dir'               => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS. self::_whitespace_slashes(REPLICA_CUSTOM_DATA_NAV_DIR) . DS,
-            'path_to_widgets_dir'           => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_WIDGETS_DIR) . DS,
-
-            //Theme
-
-            'theme'                         => self::_whitespace_slashes(REPLICA_THEME),
-            'theme_partial'                 => self::_whitespace_slashes(REPLICA_THEME_PARTIAL_DIR),
-            'theme_index'                   => self::_whitespace_slashes(REPLICA_THEME_DEFAULT_INDEX).'.'.EXT,
-            'theme_css_dir'                 => self::_whitespace_slashes(REPLICA_THEME_CSS_DIR),
-            'theme_js_dir'                  => self::_whitespace_slashes(REPLICA_THEME_JS_DIR),
-            'theme_img_dir'                 => self::_whitespace_slashes(REPLICA_THEME_IMG_DIR),
-            'theme_main_css'                => self::_whitespace_slashes(REPLICA_THEME_CSS_DIR).DS.self::_whitespace_slashes(REPLICA_THEME_DEFAULT_CSS_FILE).'.css',
-            'theme_errors_tpl'              => self::_whitespace_slashes(REPLICA_THEME_ERRORS_TEMPLATE).'.'.EXT,
-            'page_extension'                => self::_whitespace_slashes(strtolower(REPLICA_PAGE_EXTENSION)),
-            'theme_sidebars'                => self::_whitespace_slashes(REPLICA_THEME_SIDEBARS_DIR),
-            'theme_widgets'                 => self::_whitespace_slashes(REPLICA_THEME_WIDGETS_DIR),
-
-            //Default settings
-
-            'meta_title'                    => REPLICA_DEFAULT_SITE_NAME,
-            'meta_desc'                     => REPLICA_DEFAULT_SITE_DESCRIPTION,
-            'meta_tags'                     => REPLICA_DEFAULT_SITE_KEYWORDS,
-
-            #CORE SYSTEM CONFIG : METHOD HELPERS
+                'nav_dir_name'                  => self::_whitespace_slashes(REPLICA_CUSTOM_DATA_NAV_DIR),
+                'pages_dir_name'                => self::_whitespace_slashes(REPLICA_CUSTOM_DATA_PAGES_DIR),
+                'widgets_dir_name'              => self::_whitespace_slashes(REPLICA_CUSTOM_DATA_WIDGETS_DIR),
 
 
-            //Replica::redirect_to();
+                # DIRECTORIES
 
-            'redirect_to_error_tpl'        => self::_whitespace_slashes(REPLICA_THEME_ERRORS_TEMPLATE),
+                //System
 
-
-            'redirect_to_404_title'        => self::_whitespace_slashes(REPLICA_404_CUSTOM_ERROR_TITLE),
-            'redirect_to_404_heading'      => self::_whitespace_slashes(REPLICA_404_CUSTOM_ERROR_HEADING),
-            'redirect_to_404_message'      => self::_whitespace_slashes(REPLICA_404_CUSTOM_ERROR_MESSAGE),
-
-
-            'redirect_to_403_title'        => self::_whitespace_slashes(REPLICA_403_CUSTOM_ERROR_TITLE),
-            'redirect_to_403_heading'      => self::_whitespace_slashes(REPLICA_403_CUSTOM_ERROR_HEADING),
-            'redirect_to_403_message'      => self::_whitespace_slashes(REPLICA_403_CUSTOM_ERROR_MESSAGE),
+                'path_to_root_dir'              => REPLICA_ROOT_DIR,
+                'path_to_core_dir'              => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_CORE_DIR) . DS,
+                'path_to_assets_dir'            => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_ASSETS_DIR) . DS,
+                'path_to_data_dir'              => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS,
+                'path_to_modules_dir'           => REPLICA_ROOT_DIR.  self::_whitespace_slashes(REPLICA_CUSTOM_CORE_DIR).DS.self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_DIR) . DS,
 
 
-            //Replica::assets_load()
+                //Data
 
-            'assets_load_css'               => ['css','stylesheet','style','styles','c'],
-            'assets_load_js'                => ['js','javascript','script','scripts','j'],
-            'assets_load_counter_start'     =>  defined('AT_403_ON_DIR') ? 1 : 1, // determines the counter start point for dynamic separators
+                'path_to_pages_dir'             => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_PAGES_DIR) . DS,
+                'path_to_nav_dir'               => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS. self::_whitespace_slashes(REPLICA_CUSTOM_DATA_NAV_DIR) . DS,
+                'path_to_widgets_dir'           => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_WIDGETS_DIR) . DS,
 
-            //Replica::widget_load()
+                //Theme
 
-            'widget_load_navigation_system'  => ['nav','navigation','menu','mainmenu'],
-            'widget_load_widget'             => ['widget','widgets','addon','extension'],
+                'theme'                         => self::_whitespace_slashes(REPLICA_THEME),
+                'theme_partial'                 => self::_whitespace_slashes(REPLICA_THEME_PARTIAL_DIR),
+                'theme_index'                   => self::_whitespace_slashes(REPLICA_THEME_DEFAULT_INDEX).'.'.EXT,
+                'theme_css_dir'                 => self::_whitespace_slashes(REPLICA_THEME_CSS_DIR),
+                'theme_js_dir'                  => self::_whitespace_slashes(REPLICA_THEME_JS_DIR),
+                'theme_img_dir'                 => self::_whitespace_slashes(REPLICA_THEME_IMG_DIR),
+                'theme_main_css'                => self::_whitespace_slashes(REPLICA_THEME_CSS_DIR).DS.self::_whitespace_slashes(REPLICA_THEME_DEFAULT_CSS_FILE).'.css',
+                'theme_errors_tpl'              => self::_whitespace_slashes(REPLICA_THEME_ERRORS_TEMPLATE).'.'.EXT,
+                'page_extension'                => self::_whitespace_slashes(strtolower(REPLICA_PAGE_EXTENSION)),
+                'theme_sidebars'                => self::_whitespace_slashes(REPLICA_THEME_SIDEBARS_DIR),
+                'theme_widgets'                 => self::_whitespace_slashes(REPLICA_THEME_WIDGETS_DIR),
+
+                //Default settings
+
+                'meta_title'                    => REPLICA_DEFAULT_SITE_NAME,
+                'meta_desc'                     => REPLICA_DEFAULT_SITE_DESCRIPTION,
+                'meta_tags'                     => REPLICA_DEFAULT_SITE_KEYWORDS,
+
+                #CORE SYSTEM CONFIG : METHOD HELPERS
 
 
-            //Replica::include_partial()
+                //Replica::redirect_to()
 
-            'include_partial_header'         => ['header','head','top'],
-            'include_partial_footer'         => ['footer','bottom'],
-            'include_partial_widget'         => ['widgets','widget','addon','addin'],
-            'include_partial_sidebar'        => ['sidebar','aside','left_sidebar','right_sidebar','justify_sidebar','top_sidebar','bottom_sidebar','middle_sidebar'],
+                'redirect_to_error_tpl'        => self::_whitespace_slashes(REPLICA_THEME_ERRORS_TEMPLATE),
+                'redirect_to_404_title'        => self::_whitespace_slashes(REPLICA_404_CUSTOM_ERROR_TITLE),
+                'redirect_to_404_heading'      => self::_whitespace_slashes(REPLICA_404_CUSTOM_ERROR_HEADING),
+                'redirect_to_404_message'      => self::_whitespace_slashes(REPLICA_404_CUSTOM_ERROR_MESSAGE),
 
-            //Replica::scan_for();
+                'redirect_to_403_title'        => self::_whitespace_slashes(REPLICA_403_CUSTOM_ERROR_TITLE),
+                'redirect_to_403_heading'      => self::_whitespace_slashes(REPLICA_403_CUSTOM_ERROR_HEADING),
+                'redirect_to_403_message'      => self::_whitespace_slashes(REPLICA_403_CUSTOM_ERROR_MESSAGE),
 
-            'scan_for_dirs'                  => ['dir','dirs','directory','directories','folders','folder','non-file'],
-            'scan_for_non_dirs'              => ['non-dirs','files','file','document','documents','docs'],
+                //Replica::assets_load()
+
+                'assets_load_css'               => ['css','stylesheet','style','styles','c'],
+                'assets_load_js'                => ['js','javascript','script','scripts','j'],
+                'assets_load_counter_start'     =>  defined('AT_403_ON_DIR') ? 1 : 1, // determines the counter start point for dynamic separators
+
+                //Replica::widget_load()
+
+                'widget_load_navigation_system'  => ['nav','navigation','menu','mainmenu'],
+                'widget_load_widget'             => ['widget','widgets','addon','extension'],
 
 
-            //Version Information
+                //Replica::include_partial()
 
-            'system_name'                    => 'Replica',
-            'system_state'                   =>  true,
-            'system_version'                 =>  0.01,           //do not manually change this
-            'system_release_date'            =>  '12/08/2014',
-            'system_url'                     =>  'http://replica.sharif.co'
-        ];
+                'include_partial_header'         => ['header','head','top'],
+                'include_partial_footer'         => ['footer','bottom'],
+                'include_partial_widget'         => ['widgets','widget','addon','addin'],
+                'include_partial_sidebar'        => ['sidebar','aside','left_sidebar','right_sidebar','justify_sidebar','top_sidebar','bottom_sidebar','middle_sidebar'],
+
+                //Replica::scan_for()
+
+                'scan_for_dirs'                  => ['dir','dirs','directory','directories','folders','folder','non-file'],
+                'scan_for_non_dirs'              => ['non-dirs','files','file','document','documents','docs'],
+
+                //Replica::Token()
+                'token_case_generate'            => 'generate',
+                'token_case_check'               => 'check',
+
+                //Replica::session()
+
+                'session_case_put'               => 'put',
+                'session_case_get'               => 'get',
+                'session_case_exists'            => 'exists',
+                'session_case_delete'            => 'delete',
+                'session_case_destroy'           => 'destroy',
+
+                //Replica::user() //Replica::simple_auth();
+
+                'user_authorized_list'         =>  REPLICA_ROOT_DIR.  self::_whitespace_slashes(REPLICA_CUSTOM_CORE_DIR).DS.self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_DIR).DS.self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_SIMPLEAUTH_DIR).DS.self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_SIMPLEAUTH_FILE_DB).'.'.EXT,
+
+                'user_login_success'           =>  self::get_base_uri().'user/profile.html',
+                'user_login_failed'            =>  self::get_base_uri().'user/login.html?failed=true',
+                'user_logout_success'          =>  self::get_base_uri().'user/logout.html?success=true',
+
+                'user_failed_flash_message'    =>  'Hello, sorry unable to log you into the system',
+                'user_success_flash_message'   =>  'Hello %, you have been successfully logged in',
+
+                //Version Information
+
+                'system_name'                    => 'Replica',
+                'system_state'                   =>  true,
+                'system_version'                 =>  0.01,           //do not manually change this
+                'system_release_date'            =>  '12/08/2014',
+                'system_url'                     =>  'http://replica.sharif.co'
+            ];
     }
 
 
 }
 
 
+//Start session
+session_start();
+
 //Instantiate the replica class
 $app = new Replica();
+
