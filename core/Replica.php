@@ -1273,7 +1273,7 @@ class Replica
      * @param $v : variable to escape
      * @return string
      */
-    public static function e($v)
+    public static function esc($v)
     {
         //return the scape method
         return self::escape($v);
@@ -1403,15 +1403,19 @@ class Replica
 
     /*
     |--------------------------------------------------------------------------
-    | Replica::menu_gen(array)
+    | Replica::menu_generate(array)
     |--------------------------------------------------------------------------
-    | Generates upto three label dropdown menu from single to multi dimensional
+    | Generates up to three label dropdown menu from single to multi dimensional
     | array data
     |
     */
 
 
-    public static function menu_gen($data=[])
+    /**
+     * @param array $data
+     * @return bool|string
+     */
+    public static function menu_generate($data=[])
     {
 
         //Make sure there is at least one item in the array
@@ -1527,10 +1531,10 @@ class Replica
 
     /*
     |--------------------------------------------------------------------------
-    | Replica::mg(array)
+    | Replica::mgen(array)
     |--------------------------------------------------------------------------
     |
-    | Alias to Replica::menu_gen([]);
+    | Alias to Replica::menu_generate([]);
     |
     */
 
@@ -1538,10 +1542,10 @@ class Replica
      * @param array $d : data
      * @return bool|string
      */
-    public static function mg($d=[])
+    public static function mgen($d=[])
     {
         //get menu generator system
-        return self::menu_gen($d);
+        return self::menu_generate($d);
     }
 
 
@@ -1676,20 +1680,22 @@ class Replica
                     //return the data stored in the variable
                     return $session;
 
+                }elseif(isset($param['name']) && isset($param['content']))
+                {
+                    //check to see if name and contents are are if so set them to new flash
+                    return self::session('put', ['name'=>$param['name'],'value'=>$param['content']]);
                 }else
                 {
-                    //otherwise put the message
-                    return self::session('put', $param['content']);
+                    //otherwise just return empty
+                    return '';
                 }
-
-                return '';
 
             //destroy all set sessions
             case self::get_system('session_case_destroy'):
 
-                foreach($_SESSION as $destroy)
+                foreach($_SESSION as $key_to_destroy)
                 {
-                    unset($destroy);
+                    unset($key_to_destroy);
                 }
 
                 return session_destroy();
@@ -1740,7 +1746,6 @@ class Replica
     {
         //Load list of the users
         $load_users_list = self::_include_file(self::get_system('user_authorized_list'));
-        echo "<pre>", print_r($load_users_list),"</pre>";
 
         if(is_array($load_users_list))
         {
@@ -1748,6 +1753,11 @@ class Replica
 
             foreach($load_users_list as $user_id=>$user_data)
             {
+                //skip if the username do not match the result
+                if($user_data['username']!=$username) continue;
+
+                //skip if the status of the account is set to disabled
+                if($user_data['status']==self::get_system('user_account_disabled')) continue;
 
                 // compare the username and password for the user
                 if($user_data['username']==$username && $user_data['password']==$password)
@@ -1773,8 +1783,6 @@ class Replica
                     return true;
                 }
 
-                //skip if the username do not match the result
-                if($user_data['username']!=$username) continue;
 
             }
         }
@@ -1884,12 +1892,22 @@ class Replica
         return
             [
 
-                #USER SYSTEM SETTINGS
+                #GLOBAL SYSTEM SETTINGS
+
+                //default configuration
 
                 'timezone'                      =>  self::_whitespace_slashes(REPLICA_DEFAULT_TIME_ZONE),
                 'debug_mode'                    =>  is_bool(REPLICA_DEBUG_MODE) ? REPLICA_DEBUG_MODE : false,
                 'ext'                           =>  '.'.self::_whitespace_slashes(EXT),
                 'default_theme'                 =>  'default',
+
+                //Version Information
+
+                'system_name'                   => 'Replica',
+                'system_state'                  =>  true,
+                'system_version'                =>  0.01,           //do not manually change this
+                'system_release_date'           =>  '12/08/2014',
+                'system_url'                    =>  'http://replica.sharif.co',
 
                 #USER CUSTOMIZATION
 
@@ -2000,16 +2018,18 @@ class Replica
                 'user_login_failed'            =>  self::get_base_uri().'user/login.html?failed=true',
                 'user_logout_success'          =>  self::get_base_uri().'user/logout.html?success=true',
 
+                'user_failed_flash_label'      =>  'login_failed',
+                'user_success_flash_label'     =>  'login_success',
                 'user_failed_flash_message'    =>  'Hello, sorry unable to log you into the system',
-                'user_success_flash_message'   =>  'Hello %, you have been successfully logged in',
+                'user_success_flash_message'   =>  'Hello %s, you have been successfully logged in',
 
-                //Version Information
-
-                'system_name'                    => 'Replica',
-                'system_state'                   =>  true,
-                'system_version'                 =>  0.01,           //do not manually change this
-                'system_release_date'            =>  '12/08/2014',
-                'system_url'                     =>  'http://replica.sharif.co'
+                'user_account_disabled'        => 'disabled',
+                'user_account_username'        => 'username',
+                'user_account_password'        => 'password',
+                'user_account_role'            => 'role',
+                'user_account_created_at'      => 'created_at',
+                'user_account_updated_at'      => 'updated_at',
+                'user_account_email'           => 'email'
             ];
     }
 

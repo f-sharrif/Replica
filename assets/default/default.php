@@ -8,7 +8,6 @@ Replica::ip('top','header',[
 ]);
 
 
-
 ?>
 
     <header>

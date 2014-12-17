@@ -11,7 +11,7 @@ use Replica as R;
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title><?=@R::e($title);?></title>
+    <title><?=@R::esc($title);?></title>
     <meta name="description" contents="<?=@Replica::escape($meta_description);?>">
     <meta name="keywords"    contents="<?=@Replica::escape($meta_keywords);?>">
     <meta name="viewport"    content="width=device-width, initial-scale=1">
