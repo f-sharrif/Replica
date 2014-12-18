@@ -159,7 +159,9 @@ class Replica
         |    If the debug mode is set to true, get all possible errors shown
         |
         */
-        if (self::get_system('debug_mode')) {
+        if (self::get_system('debug_mode'))
+        {
+            ob_start();
 
             //Set Error Display
             ini_set('display_errors', 'On');
@@ -219,7 +221,7 @@ class Replica
             echo "<div style='width:100%;  overflow: hidden; color: #fff; height: 25px; padding: 5px; margin-bottom: 45px; background-color:#e74c3c; position: absolute; top:0; left: 0;'> <strong style='color: #fff; padding-right: 5px; border-right: 1px solid #fff;'> DEBUG MODE</strong>";
 
             //Show link to system configuration
-            if(self::input('get','debug')!="show_system_config_settings")
+            if(self::input_get('debug')!="show_system_config_settings")
             {
                 echo "<a href='?debug=show_system_config_settings' style='text-decoration: none; color:#fff; font-size: 12px;  padding: 4px 45px 4px 4px; float: right;'> Show System Configuration Settings</a>";
             }
@@ -227,13 +229,13 @@ class Replica
             echo "</div>";
 
             //Show system configuration
-            if(!is_null(self::input('get','debug')) && self::input('get','debug')=='show_system_config_settings')
+            if(!is_null(self::input_get('debug')) && self::input_get('debug')=='show_system_config_settings')
             {
                 //instantiate new replica reflection
                 $r_d = new ReflectionClass('Replica');
 
                 //format the output
-                echo  "<div style='width::90%; padding: 15px; margin: 0 auto; border: 2px solid #d35400; border-radius: 5px; background-color: #f39c12'; color: #fff; font-size: 1.3em;'><h1> Replica Diagnosics</h1><hr> <pre>";
+                echo  "<div style='width::70%; padding: 15px; margin: 0 auto; border: 2px solid #d35400; border-radius: 5px; background-color: #f39c12'; color: #fff; font-size: 1.3em;'><h1> Replica Diagnosics</h1><hr> <pre>";
 
                 //Start the system configuration
                 echo "<h2>Replica Configuration</h2>";
@@ -714,7 +716,7 @@ class Replica
      */
     private function _parse_uri_collections()
     {
-        return explode('/', rtrim(filter_var(self::input('get','replica_uri'), FILTER_SANITIZE_URL),'/'));
+        return explode('/', rtrim(filter_var(self::input_get('replica_uri'), FILTER_SANITIZE_URL),'/'));
     }
 
     # REPLICA NON STATIC
@@ -1281,58 +1283,98 @@ class Replica
 
 
     /*
-    |--------------------------------------------------------------------------
-    | Replica::input('get', 'query');
-    |--------------------------------------------------------------------------
-    | returns $_POST or $_GET  on request variable if exist or
-    | returns empty string
-    |
-    */
+   |--------------------------------------------------------------------------
+   | Replica::input_get($var);
+   |--------------------------------------------------------------------------
+   | Gets the available variable from either post or get
+   |
+   */
+
 
     /**
-     * @param string $type
      * @param $var
      * @return string
      */
-    public static function input($type = 'post', $var)
+    public static function input_get($var)
     {
-        //switch the type
-        switch (strtolower($type))
+        //Check to see if post get is set
+        if(isset($_POST[$var]))
         {
-            //by default type is post
-            case 'post':
-
-                //is the post variable is set then return post var otherwise return empty string
-                return isset($_POST[$var]) ? $_POST[$var] : '';
-
-            //If request is for http get
-            case 'get':
-
-                //if get variable is set then return get var otherwise return empty array
-                return isset($_GET[$var]) ? $_GET[$var] : '';
+            //if it is return post var
+            return $_POST[$var];
         }
 
+        //check to see if get var is set
+        elseif(isset($_GET[$var]))
+        {
+            //return get var
+            return $_GET[$var];
+        }
+
+        //return empty string by default
+        return '';
+    }
+
+    /*
+   |--------------------------------------------------------------------------
+   | Replica::in($var);
+   |--------------------------------------------------------------------------
+   | Alias to Replica::input_get()
+   |
+   */
+
+
+    /**
+     * @param $v
+     * @return string
+     */
+    public static function in($v)
+    {
+        //return the input_get() method
+        return self::input_get($v);
     }
 
 
     /*
     |--------------------------------------------------------------------------
-    | Replica::in('get', 'query');
+    | Replica::input_exists();
     |--------------------------------------------------------------------------
-    | Alias to Replica::input()
+    | returns $_POST or $_GET  on request variable if exist or
+    | returns false
     |
     */
 
     /**
-     * @param string $t : type
-     * @param $v : variable
-     * @return string
+     * @param string $type
+     * @return bool
      */
-    public static function in($t='post', $v)
+    public static function input_exists($type='post')
     {
-        //return the input method
-        return self::input($t, $v);
+
+           //switch the type
+           switch(strtolower($type))
+           {
+               //if the case being evaluated is post
+               case self::get_system('input_exists_case_post'):
+
+                   //return true or false based on the existence of the request
+                   return (!empty($_POST)) ? true : false;
+
+               //if the case is to be evaluated is get
+               case self::get_system('input_exists_case_get'):
+
+                   //return true or false based on the result of get request
+                   return (!empty($_GET)) ? true : false;
+
+               default:
+                   //by default return false
+                   return false;
+
+           }
     }
+
+
+
 
 
     /*
@@ -1729,9 +1771,20 @@ class Replica
     |--------------------------------------------------------------------------
     | Replica::simple_auth()
     |--------------------------------------------------------------------------
-    | Very basic authentication system handler if the developer or designer
+    |
+    | Very basic authentication  handler system if the developer or designer
     | wants to incorporate simple authentication system, this could handle
-    | is pretty well.
+    | it pretty well.
+    |
+    |
+    |# I WOULD NOT RECOMMEND SUCH FILE BASED AUTHENTICATION SYSTEM
+    | FOR MORE THAN A DOZEN USERS AT MOST, OTHERWISE PLEASE CONSIDER DATABASE
+    | IMPLEMENTATION, I HAVE AN EASY TO USE MYSQL PDO DATABASE WRAPPER I RELEASED
+    | AS FREE AND OPEN SOURCE AND CAN EASILY BE IMPLEMENTED WITH REPLICA. PLEASE
+    | GET IT FROM MY GITHUB ACCOUNT @ HTTP://GITHUB.COM/SP01010011
+    |
+    | IF YOU NEED ASSISTANCE INTEGRATING THE DATABASE SYSTEM FEEL FREE TO CONTACT
+    | ME AT ANYTIME AT HELLO@SHARIF.CO
     |
     |
     */
@@ -1767,8 +1820,11 @@ class Replica
 
                     self::session('put', ['name'=>'id', 'value'=>$user_id]);
 
-                    //Save current time stamp
-                    self::session('put',['name'=>self::get_system('loggedin_at'), 'value'=>time()]);
+                    //Save current time stamp to logged in time
+                    self::session('put',['name'=>self::get_system('user_session_loggedin_at'), 'value'=>time()]);
+
+                    //set the initial stamp to last activity key
+                    self::session('put',['name'=>self::get_system('user_session_last_activity'),'value'=>time()]);
 
 
                     //Assign each key aside from password to session key
@@ -1811,7 +1867,7 @@ class Replica
      * @param $data
      * @return bool
      */
-    public static function user($action, $data)
+    public static function user($action, $data=[])
     {
         //Normalize the action
         switch(strtolower($action))
@@ -1831,14 +1887,17 @@ class Replica
                 //setup a flash message
                 self::session('flash',['name'=>self::get_system('user_logout_flash_label'), 'content'=>self::get_system('user_logout_flash_message')]);
 
+                //redirection url check to see if user set a custom redirect url
+                $redirect_location = (isset($data['redirect_to'])) ? $data['redirect_to'] : self::get_system('user_logout_url');
+
                 //redirect to the logout url
-                return self::redirect_to(self::get_system('user_logout_url'));
+                return self::redirect_to($redirect_location);
 
             //test to see if the user session has expired on it is still good
             case self::get_system('user_case_session_expired'):
 
                 //calculate the session time
-                if(time()-self::session('get',self::get_system('user_session_loggedin_at')) > self::get_system('user_session_expire_time'))
+                if(time()-self::session('get',self::get_system('user_session_last_activity')) > self::get_system('user_session_expiry_time'))
                 {
                     //if it expired destroy the session
                     self::session('destroy');
@@ -1850,7 +1909,8 @@ class Replica
                     return self::redirect_to(self::get_system('user_login_failed_url'));
                 }else
                 {
-                  //continue with user activity session still alive.
+                  //continue with user activity and update the last activity time to now
+                    self::session('put',['name'=>self::get_system('user_session_last_activity'),'value'=>time()]);
                    return  false;
                 }
 
@@ -2147,7 +2207,7 @@ class Replica
                 |--------------------------------------------------------------------------
                 |
                 | Normally, simpleAuth configurations and methods would not be part of Replica
-                | , however, since simpleAuth is technically part of Replica, it
+                | ,however, since simpleAuth is technically part of Replica, it
                 | would not be an ideal to extract simpleAuth configs and methods into its own
                 | class. Ideally however, for any additional module must have its own class and
                 | configuration file contained within itself in own directory in the modules
@@ -2179,14 +2239,23 @@ class Replica
                 'user_account_updated_at'      => 'updated_at',
                 'user_account_email'           => 'email',
 
-                'user_session_expire_time'              => 300,
+                'user_session_expiry_time'              => 300,
                 'user_session_loggedin_at'              => 'loggedin_at',
+                'user_session_last_activity'            => 'last_activity',
                 'user_session_expired_flash_label'      => 'session_expired',
                 'user_session_expired_flash_message'    => 'Your session has expired for inactivity, you must login again!',
 
                 'user_case_login'                       => 'login',
                 'user_case_session_expired'             => 'session',
-                'user_case_logout'                      => 'logout'
+                'user_case_logout'                      => 'logout',
+
+
+                //Replica::input_exists()
+
+                'input_exists_case_post'                => 'post',
+                'input_exists_case_get'                 => 'get',
+
+
 
 
             ];

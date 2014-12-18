@@ -11,7 +11,7 @@ Replica::ip('top','header',[
 
 if(isset($_POST['username']))
 {
-    Replica::user($_POST['username'], $_POST['password']);
+    Replica::user('login',['username'=>Replica::in('username'),'password'=>Replica::in('password')]);
 }
 
 
@@ -48,16 +48,10 @@ if(isset($_POST['username']))
 
         //Replica::in() = Replica::input()
 
-        if(Replica::in('get','logout')=='true' )
+        if(Replica::in('logout','get')=='true' )
             {
-                Replica::session('delete',['name'=>'id']);
+                Replica::user('logout',['redirect_to'=>'http://google.com']);
 
-                Replica::session('destroy');
-
-                //Replica::rt() = Replica::redirect_to()
-                //Replica::uri() = Replica::get_base_uri()
-
-                return Replica::rt(Replica::uri());
             }
 
         ?>
