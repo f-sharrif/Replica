@@ -1844,7 +1844,7 @@ class Replica
                     self::session('destroy');
 
                     //notify user about the the time expiration
-                    self::session('flash',['name'=>self::get_system('user_session_flash_label'),'content'=>self::get_system('user_session_flash_message')]);
+                    self::session('flash',['name'=>self::get_system('user_session_expired_flash_label'),'content'=>self::get_system('user_session_expired_flash_message')]);
 
                     //send uer back to login page
                     return self::redirect_to(self::get_system('user_login_failed_url'));
