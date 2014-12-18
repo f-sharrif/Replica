@@ -1767,6 +1767,10 @@ class Replica
 
                     self::session('put', ['name'=>'id', 'value'=>$user_id]);
 
+                    //Save current time stamp
+                    self::session('put',['name'=>self::get_system('loggedin_at'), 'value'=>time()]);
+
+
                     //Assign each key aside from password to session key
 
                     foreach($user_data as $k=>$v)
@@ -1797,19 +1801,63 @@ class Replica
     | Replica::user()
     |--------------------------------------------------------------------------
     |
-    | Alias to Replica::simple_auth()
+    | Method that will manage and manipulates Replica Simple Auth
     |
     */
 
+
     /**
-     * @param $u : username
-     * @param $p : password
+     * @param $action
+     * @param $data
      * @return bool
      */
-    public static function user($u, $p)
+    public static function user($action, $data)
     {
-        //return self simple_auth() method
-        return self::simple_auth($u, $p);
+        //Normalize the action
+        switch(strtolower($action))
+        {
+            //case login attempt to login user
+            case self::get_system('user_case_login'):
+
+                //call simple_auth() method and login
+                return self::simple_auth($data['username'], $data['password']);
+
+            //case logout attempt to logout user
+            case self::get_system('user_case_logout'):
+
+                //destroy all the session
+                self::session('destroy');
+
+                //setup a flash message
+                self::session('flash',['name'=>self::get_system('user_logout_flash_label'), 'content'=>self::get_system('user_logout_flash_message')]);
+
+                //redirect to the logout url
+                return self::redirect_to(self::get_system('user_logout_url'));
+
+            //test to see if the user session has expired on it is still good
+            case self::get_system('user_case_session_expired'):
+
+                //calculate the session time
+                if(time()-self::session('get',self::get_system('user_session_loggedin_at')) > self::get_system('user_session_expire_time'))
+                {
+                    //if it expired destroy the session
+                    self::session('destroy');
+
+                    //notify user about the the time expiration
+                    self::session('flash',['name'=>self::get_system('user_session_flash_label'),'content'=>self::get_system('user_session_flash_message')]);
+
+                    //send uer back to login page
+                    return self::redirect_to(self::get_system('user_login_failed_url'));
+                }else
+                {
+                  //continue with user activity session still alive.
+                   return  false;
+                }
+
+        }
+
+        //return false if no action is specified
+        return false;
     }
 
 
@@ -1871,6 +1919,87 @@ class Replica
         return self::find_simple_auth_user($i);
     }
 
+
+    /*
+  |--------------------------------------------------------------------------
+  | Replica::all_simple_auth_users();
+  |--------------------------------------------------------------------------
+  |
+  | Returns list of all simple auth users with option to include or exclude
+  | disabled account list.
+  |
+  */
+
+
+    /**
+     * @param bool $get_disabled
+     * @return array|mixed|null
+     */
+    public static function all_simple_auth_users($get_disabled=false)
+    {
+        //Get list of users
+        $list = self::_include_file(self::get_system('user_authorized_list'));
+
+       //initialize an array to collect user data
+        $all =[];
+
+        //confirm there is at least one data in the list
+        if(count($list)>=1)
+        {
+
+            //by default this method will not return disabled account
+            if(!$get_disabled)
+            {
+                //loop through the accounts
+                foreach($list as $user_id=>$user_data)
+                {
+                    //if there is disabled account skip it
+                    if($user_data['status']==self::get_system('user_account_disabled')) continue;
+
+                    //confirm the current looping account is not disabled
+                    if($user_data['status']==self::get_system('user_account_active'))
+                    {
+                        //add to data collection
+                        $all[$user_id] =$user_data;
+                    }
+                }
+
+                //return the result
+                return $all;
+
+             //check to see if the requester explicitly request to include disabled accounts as well
+            }elseif($get_disabled)
+            {
+                //if this is the case just return the list
+                return $list;
+            }
+        }
+
+        //if the above conditions are not met just return an empty array
+        return [];
+
+    }
+
+
+    /*
+   |--------------------------------------------------------------------------
+   | Replica::all()
+   |--------------------------------------------------------------------------
+   |
+   | Alias to Replica::all_simple_auth_users();
+   |
+   */
+
+
+    /**
+     * @param $gd : get disabled data :option true or false
+     * @return array|mixed|null
+     */
+    public static function all($gd)
+    {
+        //return the data from all_simple_auth_users() method
+        return self::all_simple_auth_users($gd);
+    }
 
 
     /*
@@ -2010,26 +2139,56 @@ class Replica
                 'session_case_delete'            => 'delete',
                 'session_case_destroy'           => 'destroy',
 
-                //Replica::user() //Replica::simple_auth();
+                //Replica::simple_auth() // Replica::user() and all related helper methods to SimpleAuth
 
+                /*
+                |--------------------------------------------------------------------------
+                | WHY SIMPLE AUTH CONFIGURATIONS AND METHODS IN REPLICA CLASS?
+                |--------------------------------------------------------------------------
+                |
+                | Normally, simpleAuth configurations and methods would not be part of Replica
+                | , however, since simpleAuth is technically part of Replica, it
+                | would not be an ideal to extract simpleAuth configs and methods into its own
+                | class. Ideally however, for any additional module must have its own class and
+                | configuration file contained within itself in own directory in the modules
+                | directory. Now, i've decided, simpleAuth is not standard module therefore
+                | decided to bake it into the Replica class.
+                |
+                |
+                */
                 'user_authorized_list'         =>  REPLICA_ROOT_DIR.  self::_whitespace_slashes(REPLICA_CUSTOM_CORE_DIR).DS.self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_DIR).DS.self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_SIMPLEAUTH_DIR).DS.self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_SIMPLEAUTH_FILE_DB).'.'.EXT,
 
-                'user_login_success'           =>  self::get_base_uri().'user/profile.html',
-                'user_login_failed'            =>  self::get_base_uri().'user/login.html?failed=true',
-                'user_logout_success'          =>  self::get_base_uri().'user/logout.html?success=true',
+                'user_login_success_url'       =>  self::get_base_uri().'user/profile.html',
+                'user_login_failed_url'        =>  self::get_base_uri().'user/login.html?failed=true',
+                'user_logout_url'              =>  self::get_base_uri().'user/logout.html?success=true',
 
-                'user_failed_flash_label'      =>  'login_failed',
-                'user_success_flash_label'     =>  'login_success',
-                'user_failed_flash_message'    =>  'Hello, sorry unable to log you into the system',
-                'user_success_flash_message'   =>  'Hello %s, you have been successfully logged in',
+                'user_login_failed_flash_label'      =>  'login_failed',
+                'user_login_success_flash_label'     =>  'login_success',
+                'user_logout_flash_label'            =>  'logout_success',
+
+                'user_login_failed_flash_message'    =>  'Hello, sorry unable to log you into the system',
+                'user_login_success_flash_message'   =>  'Hello %s, you have been successfully logged in',
+                'user_logout_flash_message'          =>  'You have been successfully logged out of the system',
 
                 'user_account_disabled'        => 'disabled',
+                'user_account_active'          => 'active',
                 'user_account_username'        => 'username',
                 'user_account_password'        => 'password',
                 'user_account_role'            => 'role',
                 'user_account_created_at'      => 'created_at',
                 'user_account_updated_at'      => 'updated_at',
-                'user_account_email'           => 'email'
+                'user_account_email'           => 'email',
+
+                'user_session_expire_time'              => 300,
+                'user_session_loggedin_at'              => 'loggedin_at',
+                'user_session_expired_flash_label'      => 'session_expired',
+                'user_session_expired_flash_message'    => 'Your session has expired for inactivity, you must login again!',
+
+                'user_case_login'                       => 'login',
+                'user_case_session_expired'             => 'session',
+                'user_case_logout'                      => 'logout'
+
+
             ];
     }
 

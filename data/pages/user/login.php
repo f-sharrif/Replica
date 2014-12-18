@@ -7,5 +7,5 @@ return
     'meta_description'  => 'Login to your secured profile',
     'meta_keywords'     => 'login, register, user',
     'meta_charset'      => 'utf-8',
-    'template'          => 'login',
+    'template'          => 'users/login',
 ];
