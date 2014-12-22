@@ -40,10 +40,10 @@
     */
 
     //Default site name : used if page title not defined
-    define('REPLICA_DEFAULT_SITE_NAME', 'Replica PHP Template Engine For Designers');
+    define('REPLICA_DEFAULT_SITE_NAME', 'Replica PHP Template Engine For Designers and Developer');
 
     //Set default site description used if page does not contain a description
-    define('REPLICA_DEFAULT_SITE_DESCRIPTION', 'Replica allows designers to develop small website faster and easier');
+    define('REPLICA_DEFAULT_SITE_DESCRIPTION', 'Replica allows designers and developers alike to develop small website faster and easier');
 
 
     //Default site keywords, used when page does not have keywords
@@ -214,8 +214,6 @@
     define('REPLICA_403_CUSTOM_ERROR_MESSAGE',  "Woops, you're totally forbidden from here"); // default => Woops, you're totally forbidden from here
 
 
-
-
     /*
     |--------------------------------------------------------------------------
     | SYSTEM CUSTOMIZATION
@@ -308,8 +306,6 @@
 
     //Users list file name
     define('REPLICA_CUSTOM_MODULES_SIMPLEAUTH_FILE_DB', 'auth'); //Default => auth
-
-
 
 
     /*

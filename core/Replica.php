@@ -89,6 +89,9 @@ class Replica
         $theme_config= null;
 
 
+    ############################################################################
+    #                             INIT THE APP                                 #
+    ############################################################################
     /*
     |--------------------------------------------------------------------------
     | >--------------RUN--->(.) BOOTING APPLICATION...
@@ -102,17 +105,16 @@ class Replica
      * @return mixed
      */
 
+    public  function __construct()
+    {
+        //Register the Exception handler
+        set_exception_handler([$this, "replica_exceptions_handler"]);
+
+    }
+
     public function run()
     {
-        /*
-        |--------------------------------------------------------------------------
-        | Bootstrap the Application
-        |--------------------------------------------------------------------------
-        |
-        | Check to make sure no error loading the configuration file into the the
-        | system and bootstrap the application
-        |
-        */
+
 
         #< START OF SYSTEM CONFIGURATION
 
@@ -256,6 +258,8 @@ class Replica
 
         }
 
+
+
         # END OF SYSTEM CONFIGURATION />
 
         /*
@@ -269,6 +273,10 @@ class Replica
         return $this->dispatch();
 
     }
+
+    ############################################################################
+    #               EXCLUSIVE REPLICA PRIVATE INTERNAL METHODS                 #
+    ############################################################################
 
 
     /*
@@ -383,7 +391,6 @@ class Replica
                     $request.=DS.$ur[$i];
                 }
 
-
             }
 
             //At this point we have our request file set and its time to evaluate for its existence
@@ -395,6 +402,7 @@ class Replica
                 //Assign the page to the page
                 $this->_page = self::get_system('path_to_pages_dir').$request;
             }
+
 
             //Verify that the flag for page found is turned on and if not
             if(!$this->_request_exists && $request!='')
@@ -409,9 +417,60 @@ class Replica
                     return self::redirect_to(403);
                 }
 
-                //If the request is not directory, it's now obvious that the resource doesn't exist so Redirect to 404
-                return self::redirect_to(404);
-            }
+                //Check to see if default data page has been set in place
+                if(self::_check_file(self::get_system('path_to_pages_dir').$request.DS.self::get_system('data_default').self::get_system('ext')))
+                {
+
+                    //If default data page is set in place then return that default data page before 404 error
+                    $this->_page=self::get_system('path_to_pages_dir').$request.DS.self::get_system('data_default');
+
+                    //otherwise redirect to 404 error
+
+                }else
+                {
+                    //check to see if this is publicly accessible module
+
+                    $module = self::scan_for('dir', self::get_system('path_to_modules_dir'), self::$_scan_dir_excludes);
+
+                    if(in_array($ur[0], $module))
+                    {
+                        //module found
+                        $module = self::get_system('path_to_modules_dir').$ur[0];
+
+                        //parse module configuration file
+                        $config = self::parse_json($module.DS.self::get_system('modules_config'));
+
+                        //double check that the module is enabled
+                        if($config['status'] == self::get_system('status_enabled'))
+                        {
+
+                            //verify the module is standalone application
+                            if($config['type']==self::get_system('module_type_app'))
+                            {
+                                //try to include the module class
+                                if($this->_include_file($module.DS.$config['class'].self::get_system('ext')))
+                                {
+                                    //create new class from the application
+                                    new $config['class']();
+
+                                    //kill the application from loading anything else
+                                    exit;
+
+                                }
+
+                            }
+                        }
+
+                    }else
+                    {
+
+                        //If the request is not directory, it's now obvious that the resource doesn't exist so Redirect to 404
+                        return self::redirect_to(404);
+
+                    }
+                }
+
+            } //end of checking file not found error
 
         }
 
@@ -429,143 +488,50 @@ class Replica
 
     }
 
-
     /*
-    |--------------------------------------------------------------------------
-    | $this->make('template_path');
-    |--------------------------------------------------------------------------
-    |
-    | A method responsible for validating and generating request view template
-    | from the current theme. This method is the second most important method
-    | and the reason behind developing Replica.
-    |
-    |
-    */
-    /**
-     * @param null $path
-     * @return mixed
+     |--------------------------------------------------------------------------
+     | $this->_parse_uri_collections()
+     |--------------------------------------------------------------------------
+     |
+     | Parses the uri for the route method
+     |
      */
-    public function make($path = null)
+
+
+    /**
+     * @param string $query
+     * @return array
+     */
+    private function _parse_uri_collections($query='')
     {
+        //prep the query to get
+        $q = !empty($query) ? $query : 'replica_uri';
 
-        //Initiate the template directory
-        $template_dir = $this->_is_theme_dir(self::get_system('path_to_assets_dir') . self::get_system('theme').DS) ? self::get_system('theme') : self::get_system('default_theme');
-
-        //template to be used
-
-        $this->_template = self::get_system('path_to_assets_dir') . $template_dir . DS;
-
-        //Theme name used to grab only the name
-        define('CURRENT_THEME_NAME', $template_dir);
-
-        //Theme dir used for internal only
-        define('CURRENT_THEME_DIR', $this->_template);
-
-        // Theme configuration file
-
-        if ($theme_config = self::_check_file(CURRENT_THEME_DIR . CURRENT_THEME_NAME . '.json'))
-        {
-            $this->$theme_config = $theme_config;
-        }
-
-        // Collect all the various assigned variables to the view or template and make it available
-
-        foreach ($this->_template_data as $data => $value)
-        {
-            //Assign the data variable to itself (** DO NOT REMOVE THE SECOND "$" FROM $$DATA ***)
-            $$data = $value;
-        }
-
-        //Check to see if specific template is requested
-        if ($path) {
-
-            //If the request is for specific template, check to see if it exists
-            if (self::_check_file($this->_template . $path . self::get_system('ext'))) {
-
-                //If the requested template exist render that view and complete the task
-                return require_once $this->_template . $path .self::get_system('ext');
-            }
-        }
-
-        //If the requested template doesn't exist or there was no template requested than
-        //render the default theme template by default.
-
-        return require_once $this->_template . self::get_system('theme_index');
-
+        return explode('/', rtrim(filter_var(self::input_get($q,'get'), FILTER_SANITIZE_URL),'/'));
     }
 
-
-    #PRIVATE METHOD ACCESSED ONLY INTERNALLY
-
     /*
     |--------------------------------------------------------------------------
-    | _check_file()
+    | _module_get()
     |--------------------------------------------------------------------------
     |
-    | Checks if given file exists and is readable
+    | fetch module configuration
     |
     */
 
     /**
      * @param $path
+     * @param $action
      * @return bool
      */
-    private static function _check_file($path)
+    private function _module_get($path, $action)
     {
-        if (file_exists($path) && !is_dir($path) && is_readable($path)) {
-            return true;
+        if($module = self::parse_json($path))
+        {
+            return $module[$action];
         }
-
         return false;
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | _is_dir($path)
-    |--------------------------------------------------------------------------
-    |
-    | Check if path is a directory and is not a
-    | file and is readable
-    |
-    */
-    /**
-     * @param $path
-     * @return bool
-     */
-    private static function _is_dir($path)
-    {
-        if (is_dir($path) && !is_file($path) && is_readable($path)) {
-            return true;
-        }
-
-        return false;
-
-    }
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | _include_file()
-    |--------------------------------------------------------------------------
-    |
-    | Require in the file if it exists and is
-    | readable
-    |
-    */
-
-    /**
-     * @param $path
-     * @return mixed|null
-     */
-    private static function _include_file($path)
-    {
-        if (self::_check_file($path)) {
-            return require_once $path;
-        }
-
-        return null;
-    }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -599,23 +565,6 @@ class Replica
             return [];
     }
 
-
-    /*
-    |--------------------------------------------------------------------------
-    | Replica::_whitespace_slashes()
-    |--------------------------------------------------------------------------
-    | Trims slashes and spaces from right and left
-    |
-    */
-
-    /**
-     * @param $var
-     * @return string
-     */
-    private static function _whitespace_slashes($var)
-    {
-        return trim($var, "\x00..\x20/");
-    }
 
     /*
     |--------------------------------------------------------------------------
@@ -683,40 +632,77 @@ class Replica
     }
 
 
+    ############################################################################
+    #               PROTECTED METHODS AVAILABLE INTERNALLY TO CHILD CLASSES    #
+    ############################################################################
+
+
+
     /*
     |--------------------------------------------------------------------------
-    | Magic Setter
+    | _include_file()
     |--------------------------------------------------------------------------
     |
-    | PHP magic method to set template variables
+    | Require in the file if it exists and is
+    | readable
+    |
+    | ** CHANGES **
+    | 12/22 - changed from private to protected method - sh
     |
     */
 
     /**
-     * @param $k
-     * @param $v
+     * @param $path
+     * @return mixed|null
      */
-    public function __set($k, $v)
+    protected static function _include_file($path)
     {
-        $this->_template_data[$k] = $v;
+        if (self::_check_file($path)) {
+            return require_once $path;
+        }
+
+        return null;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Replica::_whitespace_slashes()
+    |--------------------------------------------------------------------------
+    | Trims slashes and spaces from right and left
+    |
+    | ** CHANGES **
+    | 12/22 - changed from private to protected method
+    |
+    */
+
+    /**
+     * @param $var
+     * @return string
+     */
+    protected static function _whitespace_slashes($var)
+    {
+        return trim($var, "\x00..\x20/");
     }
 
 
+
     /*
     |--------------------------------------------------------------------------
-    | $this->_parse_uri_collections()
+    | $this->_get_uri_collections()
     |--------------------------------------------------------------------------
     |
-    | Parses the uri for the route method
+    | get specified queries from http get
     |
     */
 
     /**
+     * @param $q
      * @return array
      */
-    private function _parse_uri_collections()
+    protected  function _get_uri_collections($q)
     {
-        return explode('/', rtrim(filter_var(self::input_get('replica_uri'), FILTER_SANITIZE_URL),'/'));
+        /** @var  $this */
+        return $this->_parse_uri_collections($q);
     }
 
     # REPLICA NON STATIC
@@ -769,9 +755,228 @@ class Replica
     }
 
 
+    ############################################################################
+    #               PUBLICLY ACCESSIBLE OBJECT METHODS                         #
+    ############################################################################
 
-    # REPLICA STATICALLY ACCESSIBLE PUBLIC METHODS
+    /*
+    |--------------------------------------------------------------------------
+    | $this->replica_exceptions_handler()
+    |--------------------------------------------------------------------------
+    |
+    | Handles custom exceptions
+    |
+    |
+    */
+    /**
+     * @param Exception $e
+     * @return bool
+     */
+    public function replica_exceptions_handler(Exception $e)
+   {
+       //extract the error code from the exception
+       $code = (is_numeric($e->getCode())) ? $e->getCode() : 500;
 
+       //Send it over to Redirect method to handle the view controll
+       return self::redirect_to($code,$e);
+
+   }
+
+    /*
+    |--------------------------------------------------------------------------
+    | $this->make('template_path');
+    |--------------------------------------------------------------------------
+    |
+    | A method responsible for validating and generating request view template
+    | from the current theme. This method is the second most important method
+    | and the reason behind developing Replica.
+    |
+    |
+    */
+    /**
+     * @param null $path
+     * @return mixed
+     */
+    public function make($path = null)
+    {
+
+        //Initiate the template directory
+        $template_dir = $this->_is_theme_dir(self::get_system('path_to_assets_dir') . self::get_system('theme').DS) ? self::get_system('theme') : self::get_system('default_theme');
+
+        //template to be used
+
+        $this->_template = self::get_system('path_to_assets_dir') . $template_dir . DS;
+
+        //Theme name used to grab only the name
+        define('CURRENT_THEME_NAME', $template_dir);
+
+        //Theme dir used for internal only
+        define('CURRENT_THEME_DIR', $this->_template);
+
+        // Theme configuration file
+
+        if ($theme_config = self::_check_file(CURRENT_THEME_DIR . CURRENT_THEME_NAME . '.json'))
+        {
+            $this->$theme_config = $theme_config;
+        }
+
+        // Collect all the various assigned variables to the view or template and make it available
+
+        foreach ($this->_template_data as $data => $value)
+        {
+            //Assign the data variable to itself (** DO NOT REMOVE THE SECOND "$" FROM $$DATA ***)
+            $$data = $value;
+        }
+
+        //Check to see if specific template is requested
+        if ($path) {
+
+            //If the request is for specific template, check to see if it exists
+            if (self::_check_file($this->_template . $path . self::get_system('ext'))) {
+
+                //If the requested template exist render that view and complete the task
+                return require_once $this->_template . $path .self::get_system('ext');
+            }
+        }
+
+        //If the requested template doesn't exist or there was no template requested than
+        //render the default theme template by default.
+
+        return require_once $this->_template . self::get_system('theme_index');
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Magic Setter
+    |--------------------------------------------------------------------------
+    |
+    | PHP magic method to set template variables
+    |
+    */
+
+    /**
+     * @param $k
+     * @param $v
+     */
+    public function __set($k, $v)
+    {
+        $this->_template_data[$k] = $v;
+    }
+
+
+
+
+
+
+    ############################################################################
+    #               PUBLICLY ACCESSIBLE STATIC METHODS                         #
+    ############################################################################
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | _check_file()
+    |--------------------------------------------------------------------------
+    |
+    | Checks if given file exists and is readable
+    |
+    | ** CHANGES **
+    | 12/22 changed from private to public method, underscore (_) will be removed
+    | in future version
+    |
+    */
+
+    /**
+     * @param $path
+     * @return bool
+     */
+    public static function _check_file($path)
+    {
+        if (file_exists($path) && !is_dir($path) && is_readable($path)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | _is_dir($path)
+    |--------------------------------------------------------------------------
+    |
+    | Check if path is a directory and is not a
+    | file and is readable
+    |
+    | ** CHANGES **
+    | 12/22 changed from private to public method, underscore (_) will be removed
+    | in the future version
+    |
+    */
+    /**
+     * @param $path
+     * @return bool
+     */
+    public static function _is_dir($path)
+    {
+        if (is_dir($path) && !is_file($path) && is_readable($path)) {
+            return true;
+        }
+
+        return false;
+
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Replica::parse_json()
+    |--------------------------------------------------------------------------
+    |
+    | process json file
+    |
+    */
+
+
+    /**
+     * @param $path
+     * @return bool|mixed
+     */
+    public static function parse_json($path)
+    {
+        //see if the configuration file is available
+        if(self::_check_file($path))
+        {
+            //get the contents of the config file
+            $config = file_get_contents($path);
+
+            //return the configuration file for the module
+            return json_decode($config, true);
+        }
+
+        //there is nothing to return
+        return false;
+    }
+
+    /*
+   |--------------------------------------------------------------------------
+   | Replica::p2a(p)
+   |--------------------------------------------------------------------------
+   |
+   | Alias to Replica::parse_json(), parses json file and returns array
+   |
+   */
+
+    /**
+     * @param $p
+     * @return bool|mixed
+     */
+    public static function p2a($p)
+    {
+        //return parsed json
+        return self::parse_json($p);
+    }
 
 
 
@@ -929,10 +1134,11 @@ class Replica
     */
 
     /**
-     * @param $location
+     * @param null $location
+     * @param Exception $e
      * @return bool
      */
-    public static function redirect_to($location=null)
+    public static function redirect_to($location=null, Exception $e=null)
     {
 
         //by default location is null so check is location is passed in
@@ -957,13 +1163,13 @@ class Replica
                         header('HTTP/1.0 404 File Not Found');
 
                         //set a custom title of the error
-                        $replica->title = self::get_system('redirect_to_404_title');
+                        $replica->replica_exceptions_error_title = self::get_system('redirect_to_404_title');
 
                         //set custom header for the error page
-                        $replica->header = self::get_system('redirect_to_404_heading');
+                        $replica->replica_exceptions_error_header = self::get_system('redirect_to_404_heading');
 
                         //set custom message for the error
-                        $replica->body = self::get_system('redirect_to_404_message');
+                        $replica->replica_exceptions_error_body = self::get_system('redirect_to_404_message');
 
                         //make the display for the errors page
                         $replica->make(self::get_system('redirect_to_error_tpl'));
@@ -978,13 +1184,13 @@ class Replica
                         header('HTTP/1.0 403 Forbidden');
 
                         //set custom title for the 403 error page
-                        $replica->title = self::get_system('redirect_to_403_title');
+                        $replica->replica_exceptions_error_title = self::get_system('redirect_to_403_title');
 
                         //set custom error header
-                        $replica->header = self::get_system('redirect_to_403_heading');
+                        $replica->replica_exceptions_error_header = self::get_system('redirect_to_403_heading');
 
                         //set custom error message
-                        $replica->body = self::get_system('redirect_to_403_message');
+                        $replica->replica_exceptions_error_body = self::get_system('redirect_to_403_message');
 
                         //generate the error page
                         $replica->make(self::get_system('redirect_to_error_tpl'));
@@ -992,6 +1198,64 @@ class Replica
                         //Exist the process
                         exit;
 
+                    default:
+                        $http_header_message ="";
+
+                        # REPLICA SPECIFIC ERROR CODES
+
+                        # DEFAULT HTTP ERROR CODES
+
+                        //set to Bad Request
+                        if($e->getCode()==400)
+                            $http_header_message="400 Bad Request";
+
+                        //set to unauthorized
+                        if($e->getCode()==401)
+                            $http_header_message="400 Unauthorized";
+
+                        //set to Internal Server Error
+                        if($e->getCode()==500)
+                            $http_header_message ="500 Internal Server Error";
+
+                        //set to Bad Gateway
+                        if($e->getCode()==502)
+                            $http_header_message ="502 Bad Gateway";
+
+                        //set to Service Unavailable
+                        if($e->getCode()==503)
+                            $http_header_message="503 Service Unavailable";
+
+                        //set to Gateway Timeout
+                        if($e->getCode()==504)
+                            $http_header_message="504 Gateway Timeout";
+
+
+                        header("HTTP/1.1 {$http_header_message}");
+
+                        //set the title of the error
+                        $replica->replica_exceptions_error_title = "Error ".$e->getCode()." occurred";
+
+                        //set the view heading
+                        $replica->replica_exceptions_error_header = $e->getCode();
+
+                        //set the view message
+                        $replica->replica_exceptions_error_body = $e->getMessage();
+
+                        //set the exception line number
+                        $replica->replica_exceptions_error_line = $e->getLine();
+
+                        //set the exception file
+                        $replica->replica_exceptions_error_file = $e->getFile();
+
+                        //set the trace
+                        $replica->replica_exceptions_error_trace = $e->getTrace();
+
+                        //set the trace string
+                        $replica->replica_exceptions_error_traceString = $e->getTraceAsString();
+
+                        $replica->make(self::get_system('redirect_to_error_tpl'));
+
+                        exit;
                 }
 
 
@@ -1351,26 +1615,26 @@ class Replica
     public static function input_exists($type='post')
     {
 
-           //switch the type
-           switch(strtolower($type))
-           {
-               //if the case being evaluated is post
-               case self::get_system('input_exists_case_post'):
+        //switch the type
+        switch(strtolower($type))
+        {
+            //if the case being evaluated is post
+            case self::get_system('input_exists_case_post'):
 
-                   //return true or false based on the existence of the request
-                   return (!empty($_POST)) ? true : false;
+                //return true or false based on the existence of the request
+                return (!empty($_POST)) ? true : false;
 
-               //if the case is to be evaluated is get
-               case self::get_system('input_exists_case_get'):
+            //if the case is to be evaluated is get
+            case self::get_system('input_exists_case_get'):
 
-                   //return true or false based on the result of get request
-                   return (!empty($_GET)) ? true : false;
+                //return true or false based on the result of get request
+                return (!empty($_GET)) ? true : false;
 
-               default:
-                   //by default return false
-                   return false;
+            default:
+                //by default return false
+                return false;
 
-           }
+        }
     }
 
 
@@ -1407,21 +1671,27 @@ class Replica
      * @param $request
      * @return array
      */
-    public static function get_system($request)
+    public static function get_system($request=[])
     {
 
-        //Test to see if the array key exists in the system configuration
-        while($config=array_key_exists($request, self::_system_configuration_settings()))
+        if(count($request)) {
+            //Test to see if the array key exists in the system configuration
+            while ($config = array_key_exists($request, self::_system_configuration_settings())) {
+                //if the result of the test comes true
+                if ($config)
+
+                    //return the value for that key
+                    return self::_system_configuration_settings()[$request];
+            }
+
+            //otherwise if the key doesn't exist than return an empty array.
+            return [];
+
+        }else
         {
-            //if the result of the test comes true
-            if($config)
-
-                //return the value for that key
-                return self::_system_configuration_settings()[$request];
+            //publicly access the entire system configuration setting at once.
+            return self::_system_configuration_settings();
         }
-
-        //otherwise if the key doesn't exist than return an empty array.
-        return [];
     }
 
     /*
@@ -1627,10 +1897,10 @@ class Replica
                     //return true
                     return true;
                 }
-
-                //Otherwise return false
-                return false;
         }
+
+        //Otherwise return false
+        return false;
     }
 
 
@@ -1743,6 +2013,8 @@ class Replica
                 return session_destroy();
 
         }
+
+        return false;
     }
 
     /*
@@ -1810,7 +2082,7 @@ class Replica
                 if($user_data['username']!=$username) continue;
 
                 //skip if the status of the account is set to disabled
-                if($user_data['status']==self::get_system('user_account_disabled')) continue;
+                if($user_data['status']==self::get_system('status_disabled')) continue;
 
                 // compare the username and password for the user
                 if($user_data['username']==$username && $user_data['password']==$password)
@@ -1909,9 +2181,9 @@ class Replica
                     return self::redirect_to(self::get_system('user_login_failed_url'));
                 }else
                 {
-                  //continue with user activity and update the last activity time to now
+                    //continue with user activity and update the last activity time to now
                     self::session('put',['name'=>self::get_system('user_session_last_activity'),'value'=>time()]);
-                   return  false;
+                    return  false;
                 }
 
         }
@@ -2000,7 +2272,7 @@ class Replica
         //Get list of users
         $list = self::_include_file(self::get_system('user_authorized_list'));
 
-       //initialize an array to collect user data
+        //initialize an array to collect user data
         $all =[];
 
         //confirm there is at least one data in the list
@@ -2014,10 +2286,10 @@ class Replica
                 foreach($list as $user_id=>$user_data)
                 {
                     //if there is disabled account skip it
-                    if($user_data['status']==self::get_system('user_account_disabled')) continue;
+                    if($user_data['status']==self::get_system('status_disabled')) continue;
 
                     //confirm the current looping account is not disabled
-                    if($user_data['status']==self::get_system('user_account_active'))
+                    if($user_data['status']==self::get_system('status_active'))
                     {
                         //add to data collection
                         $all[$user_id] =$user_data;
@@ -2027,7 +2299,7 @@ class Replica
                 //return the result
                 return $all;
 
-             //check to see if the requester explicitly request to include disabled accounts as well
+                //check to see if the requester explicitly request to include disabled accounts as well
             }elseif($get_disabled)
             {
                 //if this is the case just return the list
@@ -2062,6 +2334,13 @@ class Replica
     }
 
 
+
+
+    ############################################################################
+    #                   SYSTEM CONFIGURATION SETTINGS                          #
+    ############################################################################
+
+
     /*
    |--------------------------------------------------------------------------
    | self::_system_configuration_settings()
@@ -2089,6 +2368,25 @@ class Replica
                 'debug_mode'                    =>  is_bool(REPLICA_DEBUG_MODE) ? REPLICA_DEBUG_MODE : false,
                 'ext'                           =>  '.'.self::_whitespace_slashes(EXT),
                 'default_theme'                 =>  'default',
+                'data_default'                  =>  'main',
+
+                //global module settings
+
+                'modules_config'                =>  'config.json',
+                'modules_type_extension'        =>  'extension', //modules that can be used  to extend functionality of the application
+                'module_type_app'               =>  'app',  // standalone modules - that need to be routed independently of the application
+
+                //General settings
+
+                'status_enabled'                => 'enabled',
+                'status_disabled'               => 'disabled',
+                'status_active'                 => 'active',
+                'status'                        => 'status',
+                'type'                          => 'type',
+                'version'                       => 'version',
+                'author'                        => 'author',
+                'url'                           => 'url',
+                'full_name'                     => 'full_name',
 
                 //Version Information
 
@@ -2163,6 +2461,10 @@ class Replica
                 'redirect_to_403_heading'      => self::_whitespace_slashes(REPLICA_403_CUSTOM_ERROR_HEADING),
                 'redirect_to_403_message'      => self::_whitespace_slashes(REPLICA_403_CUSTOM_ERROR_MESSAGE),
 
+                'redirect_to_case_403'         => 403,
+                'redirect_to_case_404'         => 404,
+                'redirect_to_case_500'         => 500,
+
                 //Replica::assets_load()
 
                 'assets_load_css'               => ['css','stylesheet','style','styles','c'],
@@ -2230,8 +2532,6 @@ class Replica
                 'user_login_success_flash_message'   =>  'Hello %s, you have been successfully logged in',
                 'user_logout_flash_message'          =>  'You have been successfully logged out of the system',
 
-                'user_account_disabled'        => 'disabled',
-                'user_account_active'          => 'active',
                 'user_account_username'        => 'username',
                 'user_account_password'        => 'password',
                 'user_account_role'            => 'role',
@@ -2254,10 +2554,6 @@ class Replica
 
                 'input_exists_case_post'                => 'post',
                 'input_exists_case_get'                 => 'get',
-
-
-
-
             ];
     }
 

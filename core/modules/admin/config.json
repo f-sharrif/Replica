@@ -1,0 +1,12 @@
+{
+    "name":"admin",
+    "full_name": "Administrator",
+    "status": "enabled",
+    "version": "1.0",
+    "type": "app",
+    "class":"admin",
+
+    "description": "Administrator module is standalone Replica module that provides you with the ability to integrate with Replica and user backend features",
+    "author": "sharif",
+    "url": "http://replica.sharif.co/features/admin"
+}
