@@ -49,7 +49,6 @@
     //Default site keywords, used when page does not have keywords
     define('REPLICA_DEFAULT_SITE_KEYWORDS', 'Replica PHP, PHP Templating Engine, PHP Micro Sites');
 
-
     /*
     |--------------------------------------------------------------------------
     | Application Time Zone
@@ -58,7 +57,6 @@
     | Provide system application time zone
     |
     */
-
 
     define('REPLICA_DEFAULT_TIME_ZONE', 'America/New_York');
 
@@ -76,8 +74,8 @@
     // your site to live server
 
     # ***NOTE** Must be boolean value of 'true' or 'false' otherwise debug mode
-    // is set to false by default
 
+    // is set to false by default
     define('REPLICA_DEBUG_MODE', true);  //default => true
 
     /*

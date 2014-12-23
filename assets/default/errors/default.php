@@ -15,11 +15,30 @@
             <p class="site-description"><?=@$replica_exceptions_error_body;?></p>
             <hr>
         </header>
+        <?php if(isset($advanced_exception_details)):?>
+
+            <div class="justify-text">
+                <section>
+                    <h4>Advanced Exceptions Details</h4>
+                    <p>
+                         <pre>
+                            <?php var_dump($advanced_exception_details); ?>
+                        </pre>
+
+                    </p>
+                </section>
+            </div>
+
+        <?php endif;?>
+
         <div class="justify-text">
             <section>
                 <p><a href="<?=Replica::get_base_uri();?>"> Try home </a></p>
             </section>
         </div>
+
+
+
     </div>
 
 

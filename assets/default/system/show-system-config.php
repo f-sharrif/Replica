@@ -1,7 +1,7 @@
 <?php
 if(!defined('REPLICA')) {die('Sorry direct access to this file not allowed');}
 
-Replica::ip('top','header',[
+Replica::inc_part('top','header',[
     'title' => $title,
 
 ]);
@@ -86,4 +86,4 @@ Replica::ip('top','header',[
 </table>
 
  </div>
-<?php Replica::ip('footer','footer'); ?>
+<?php Replica::inc_part('footer','footer'); ?>

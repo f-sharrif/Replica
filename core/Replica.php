@@ -337,6 +337,7 @@ class Replica
 
     /**
      * @return bool|string
+     * @throws Exception
      */
     private function route()
     {
@@ -413,8 +414,8 @@ class Replica
                     //If it is directory, then set a global flag * for assets to load properly via auto_dumper
                     define('AT_403_ON_DIR', true);
 
-                    //Redirect user to 403 error and update http headers
-                    return self::redirect_to(403);
+                    //throw new 403 exception error
+                    throw new Exception(sprintf(self::get_system('replica_exception_msg_403'), end($ur)),403);
                 }
 
                 //Check to see if default data page has been set in place
@@ -464,8 +465,8 @@ class Replica
                     }else
                     {
 
-                        //If the request is not directory, it's now obvious that the resource doesn't exist so Redirect to 404
-                        return self::redirect_to(404);
+                        //If the request is not directory, it's now obvious that the resource doesn't exist so throw in 404 exception
+                        throw new Exception(sprintf(self::get_system('replica_exception_msg_404'), end($ur)),404);
 
                     }
                 }
@@ -714,9 +715,13 @@ class Replica
    |
    | Returns current theme configurations setting
    |
+   | ** CHANGES **
+   | 12/23 - This method will be removed in the next version of Replica
+   |
    */
 
     /**
+     * @since version 0.01
      * @param $format
      * @return array|mixed|null
      */
@@ -777,7 +782,7 @@ class Replica
        //extract the error code from the exception
        $code = (is_numeric($e->getCode())) ? $e->getCode() : 500;
 
-       //Send it over to Redirect method to handle the view controll
+       //Send it over to Redirect method to handle the view control
        return self::redirect_to($code,$e);
 
    }
@@ -1126,10 +1131,12 @@ class Replica
 
     /*
     |--------------------------------------------------------------------------
-    | Replica::redirect_to(404); function
+    | Replica::redirect_to(); Helper to Replica_Exceptions_Handler()
     |--------------------------------------------------------------------------
     | Redirects throughout the application and
-    | renders error pages
+    | works in conjunction with replica_exceptions_handler() method to handle
+    | all exception within the application. In this capacity, redirect_to() is
+    | responsible to generating views for the errors.
     |
     */
 
@@ -1145,119 +1152,45 @@ class Replica
         if ($location)
         {
 
-            //check to see if location is a number
-            if (is_numeric($location))
+        //check to see if location is a number
+        if (is_numeric($location))
+        {
+
+            //Instantiate the replica class
+            $replica = new Replica();
+
+            //get the thrown status code from config
+            $status_code = self::get_system('replica_exception_status_'.$e->getCode());
+
+            //set the default fallback status code to Internal Server Error
+            $default_status_code = self::get_system('replica_exception_status_500');
+
+            //Prepare the http header status code
+            $http_header_status_code = (isset($status_code)) ? $status_code : $default_status_code;
+
+            //set http header response status
+            header("HTTP/1.1 {$http_header_status_code}");
+
+            //set the title of the error
+            $replica->replica_exceptions_error_title = "Error ".$http_header_status_code;
+
+            //set the view heading
+            $replica->replica_exceptions_error_header = $e->getCode();
+
+            //set the view message
+            $replica->replica_exceptions_error_body = $e->getMessage();
+
+            //if the debug mode is on, generate more errors to help debugger
+            if(self::get_system('debug_mode'))
             {
+                //make the advanced exception details available to the view only when debug mode in on
+                $replica->advanced_exception_details = $e;
+            }
 
-                //Instantiate the replica class
-                $replica = new Replica();
+            //generate view for the error
+            $replica->make(self::get_system('redirect_to_error_tpl'));
 
-                //if location is a number evaluate against these predefined errors
-                switch ($location)
-                {
-
-                    //Check if is 404
-                    case '404':
-
-                        //Force http header to send real error
-                        header('HTTP/1.0 404 File Not Found');
-
-                        //set a custom title of the error
-                        $replica->replica_exceptions_error_title = self::get_system('redirect_to_404_title');
-
-                        //set custom header for the error page
-                        $replica->replica_exceptions_error_header = self::get_system('redirect_to_404_heading');
-
-                        //set custom message for the error
-                        $replica->replica_exceptions_error_body = self::get_system('redirect_to_404_message');
-
-                        //make the display for the errors page
-                        $replica->make(self::get_system('redirect_to_error_tpl'));
-
-                        //terminate the process
-                        exit;
-
-                    //check for 403
-                    case '403':
-
-                        //force http header to send real 403 error
-                        header('HTTP/1.0 403 Forbidden');
-
-                        //set custom title for the 403 error page
-                        $replica->replica_exceptions_error_title = self::get_system('redirect_to_403_title');
-
-                        //set custom error header
-                        $replica->replica_exceptions_error_header = self::get_system('redirect_to_403_heading');
-
-                        //set custom error message
-                        $replica->replica_exceptions_error_body = self::get_system('redirect_to_403_message');
-
-                        //generate the error page
-                        $replica->make(self::get_system('redirect_to_error_tpl'));
-
-                        //Exist the process
-                        exit;
-
-                    default:
-                        $http_header_message ="";
-
-                        # REPLICA SPECIFIC ERROR CODES
-
-                        # DEFAULT HTTP ERROR CODES
-
-                        //set to Bad Request
-                        if($e->getCode()==400)
-                            $http_header_message="400 Bad Request";
-
-                        //set to unauthorized
-                        if($e->getCode()==401)
-                            $http_header_message="400 Unauthorized";
-
-                        //set to Internal Server Error
-                        if($e->getCode()==500)
-                            $http_header_message ="500 Internal Server Error";
-
-                        //set to Bad Gateway
-                        if($e->getCode()==502)
-                            $http_header_message ="502 Bad Gateway";
-
-                        //set to Service Unavailable
-                        if($e->getCode()==503)
-                            $http_header_message="503 Service Unavailable";
-
-                        //set to Gateway Timeout
-                        if($e->getCode()==504)
-                            $http_header_message="504 Gateway Timeout";
-
-
-                        header("HTTP/1.1 {$http_header_message}");
-
-                        //set the title of the error
-                        $replica->replica_exceptions_error_title = "Error ".$e->getCode()." occurred";
-
-                        //set the view heading
-                        $replica->replica_exceptions_error_header = $e->getCode();
-
-                        //set the view message
-                        $replica->replica_exceptions_error_body = $e->getMessage();
-
-                        //set the exception line number
-                        $replica->replica_exceptions_error_line = $e->getLine();
-
-                        //set the exception file
-                        $replica->replica_exceptions_error_file = $e->getFile();
-
-                        //set the trace
-                        $replica->replica_exceptions_error_trace = $e->getTrace();
-
-                        //set the trace string
-                        $replica->replica_exceptions_error_traceString = $e->getTraceAsString();
-
-                        $replica->make(self::get_system('redirect_to_error_tpl'));
-
-                        exit;
-                }
-
+            exit;
 
             } else
             {
@@ -1367,7 +1300,7 @@ class Replica
 
     /*
     |--------------------------------------------------------------------------
-    | Replica::ip('t','p',[])
+    | Replica::inc_part('t','p',[])
     |--------------------------------------------------------------------------
     | Shorter alias for Replica::include_partial();
     |
@@ -1379,7 +1312,7 @@ class Replica
      * @param array $pr : parameters
      * @return mixed|null
      */
-    public static function ip($t, $p, $pr=[])
+    public static function inc_part($t, $p, $pr=[])
     {
         return self::include_partial($t, $p, $pr);
     }
@@ -2449,6 +2382,25 @@ class Replica
 
                 #CORE SYSTEM CONFIG : METHOD HELPERS
 
+                //$this->replica_exceptions_handler()
+
+                //status codes
+                'replica_exception_status_400'  => '400 Bad Request',
+                'replica_exception_status_401'  => '401 Unauthorized',
+                'replica_exception_status_403'  => '403 Forbidden',
+                'replica_exception_status_404'  => '404 Not Found',
+                'replica_exception_status_500'  => '500 Internal Server Error',
+                'replica_exception_status_503'  => '502 Bad Gateway',
+                'replica_exception_status_504'  => '503 Service Unavailable',
+
+                //Universal Messages
+                'replica_exception_msg_400'     => '',
+                'replica_exception_msg_401'     => '',
+                'replica_exception_msg_403'     => 'Wooops! You, totally are forbidden from accessing <strong>%s</strong>. Sorry, it\'s true.',
+                'replica_exception_msg_404'     => 'Ooops! The page you\'re looking for <strong>%s</strong> is not found here!',
+                'replica_exception_msg_500'     => '',
+                'replica_exception_msg_502'     => '',
+                'replica_exception_msg_503'     => '',
 
                 //Replica::redirect_to()
 
@@ -2461,9 +2413,6 @@ class Replica
                 'redirect_to_403_heading'      => self::_whitespace_slashes(REPLICA_403_CUSTOM_ERROR_HEADING),
                 'redirect_to_403_message'      => self::_whitespace_slashes(REPLICA_403_CUSTOM_ERROR_MESSAGE),
 
-                'redirect_to_case_403'         => 403,
-                'redirect_to_case_404'         => 404,
-                'redirect_to_case_500'         => 500,
 
                 //Replica::assets_load()
 
