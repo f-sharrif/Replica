@@ -2255,6 +2255,14 @@ class Replica
    |
    */
 
+    /*
+   |--------------------------------------------------------------------------
+   | Replica::all()
+   |--------------------------------------------------------------------------
+   |
+   | Alias to Replica::all_simple_auth_users();
+   |
+   */
 
     /**
      * @param $gd : get disabled data :option true or false
@@ -2266,6 +2274,82 @@ class Replica
         return self::all_simple_auth_users($gd);
     }
 
+    /*
+   |--------------------------------------------------------------------------
+   | Replica::send_email()
+   |--------------------------------------------------------------------------
+   |
+   | A method that will allow to send simple message using the php mail function
+   |
+   |
+   */
+    /**
+     * @param array $options
+     * @return array
+     */
+    public static function send_email($options=[])
+    {
+
+        //Prepare the mailbox where the email will be going
+        $to = (isset($options['to'])) ? filter_var($options['to'], FILTER_SANITIZE_EMAIL) : self::get_system('send_email_default_address');
+
+        //prepare the subjects for the email
+        $subject = (isset($options['subject'])) ? $options['subject'] : self::get_system('send_email_default_subject');
+
+        //prepare the from address
+        $headers = "From: ".self::input_get(self::get_system('send_email_contact_email'))."\r\n";
+
+       //set the reply to option
+        if(isset($options['reply-to']) && $options['reply-to']==true)
+        {
+            $headers .= "Reply-To: " . self::input_get(self::get_system('send_email_contact_email')) . "\r\n";
+        }
+
+        //set the cc option
+        if(isset($options['cc']) && $options['cc']==true)
+        {
+            $headers .= "CC: " . self::get_system('send_email_cc_address');
+        }
+
+        //set the contents mime
+        $headers.='MIME-Version 1.0'."\r\n";
+
+        //set the contents type
+        $headers.='Content-Type: text/html; charset=ISO-8859-1'."\r\n";
+
+        //get the message from the options
+
+        $message = isset($options['message']) ? $options['message'] : self::get_system('send_email_empty_message');
+
+        // send the mail
+        if(mail($to, $subject, $message, $headers))
+        {
+            //Confirm email sent success
+            return self::get_system("send_email_message_sent_success");
+        }
+
+        //Email send failed
+        return self::get_system("send_email_message_sent_failed");
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Replica::se()
+    |--------------------------------------------------------------------------
+    |
+    | Alias to Replica::send_email()
+    |
+    |
+    */
+
+    /**
+     * @param array $opt
+     * @return array
+     */
+    public static function se($opt=[])
+    {
+        return self::send_email($opt);
+    }
 
 
 
@@ -2352,7 +2436,7 @@ class Replica
                 'path_to_assets_dir'            => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_ASSETS_DIR) . DS,
                 'path_to_data_dir'              => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS,
                 'path_to_modules_dir'           => REPLICA_ROOT_DIR.  self::_whitespace_slashes(REPLICA_CUSTOM_CORE_DIR).DS.self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_DIR) . DS,
-
+                'path_to_email_templates'       => '',
 
                 //Data
 
@@ -2385,6 +2469,7 @@ class Replica
                 //$this->replica_exceptions_handler()
 
                 //status codes
+
                 'replica_exception_status_400'  => '400 Bad Request',
                 'replica_exception_status_401'  => '401 Unauthorized',
                 'replica_exception_status_403'  => '403 Forbidden',
@@ -2394,6 +2479,7 @@ class Replica
                 'replica_exception_status_504'  => '503 Service Unavailable',
 
                 //Universal Messages
+
                 'replica_exception_msg_400'     => '',
                 'replica_exception_msg_401'     => '',
                 'replica_exception_msg_403'     => 'Wooops! You, totally are forbidden from accessing <strong>%s</strong>. Sorry, it\'s true.',
@@ -2402,7 +2488,29 @@ class Replica
                 'replica_exception_msg_502'     => '',
                 'replica_exception_msg_503'     => '',
 
-                //Replica::redirect_to()
+                #Replica::send_email()
+
+                "__RSE_MTH_DESC"                => '',
+
+                'send_email_default_address'   => 'test@replica.sharif.co',
+                'send_email_default_subject'   => 'Message from your Replica site',
+                'send_email_cc_address'        => 'cc.test@replica.sharif.co',
+
+                'send_email_message_sent_success'   => "Thank you %s, your message has been successfully sent",
+                'sent_email_message_sent_failed'    => "Oh no, something went wrong, unable to sent your message",
+
+                'send_email_contact_name'           => 'contact_name',
+                'send_email_contact_email'          => 'contact_email',
+                'send_email_contact_firstname'      => 'contact_firstname',
+                'send_email_contact_lastname'       => 'contact_lastname',
+                'send_email_contact_date'           => 'contact_date',
+                'send_email_contact_message'        => 'contact_message',
+                'send_email_contact_type'           => [],
+
+
+                #Replica::redirect_to()
+
+                '__RRT_MTH_DESC'                 => "",
 
                 'redirect_to_error_tpl'        => self::_whitespace_slashes(REPLICA_THEME_ERRORS_TEMPLATE),
                 'redirect_to_404_title'        => self::_whitespace_slashes(REPLICA_404_CUSTOM_ERROR_TITLE),
@@ -2414,35 +2522,48 @@ class Replica
                 'redirect_to_403_message'      => self::_whitespace_slashes(REPLICA_403_CUSTOM_ERROR_MESSAGE),
 
 
-                //Replica::assets_load()
+                #Replica::assets_load()
+
+                "__RAL_MTH_DESC"               => '',
 
                 'assets_load_css'               => ['css','stylesheet','style','styles','c'],
                 'assets_load_js'                => ['js','javascript','script','scripts','j'],
                 'assets_load_counter_start'     =>  defined('AT_403_ON_DIR') ? 1 : 1, // determines the counter start point for dynamic separators
 
-                //Replica::widget_load()
+                #Replica::widget_load()
+
+                "__RWL_MTH_DESC"                 => '',
 
                 'widget_load_navigation_system'  => ['nav','navigation','menu','mainmenu'],
                 'widget_load_widget'             => ['widget','widgets','addon','extension'],
 
 
-                //Replica::include_partial()
+                #Replica::include_partial()
+
+                "__RIP_MTH_DESC"                 => '',
 
                 'include_partial_header'         => ['header','head','top'],
                 'include_partial_footer'         => ['footer','bottom'],
                 'include_partial_widget'         => ['widgets','widget','addon','addin'],
                 'include_partial_sidebar'        => ['sidebar','aside','left_sidebar','right_sidebar','justify_sidebar','top_sidebar','bottom_sidebar','middle_sidebar'],
 
-                //Replica::scan_for()
+                #Replica::scan_for()
+
+                "__RSF_MTH_DESC"                 => '',
 
                 'scan_for_dirs'                  => ['dir','dirs','directory','directories','folders','folder','non-file'],
                 'scan_for_non_dirs'              => ['non-dirs','files','file','document','documents','docs'],
 
-                //Replica::Token()
+                #Replica::Token()
+
+                "__RTK_MTH_DESC"                 => '',
+
                 'token_case_generate'            => 'generate',
                 'token_case_check'               => 'check',
 
-                //Replica::session()
+                #Replica::session()
+
+                "__RSES_MTH_DESC"                => '',
 
                 'session_case_put'               => 'put',
                 'session_case_get'               => 'get',
@@ -2451,6 +2572,8 @@ class Replica
                 'session_case_destroy'           => 'destroy',
 
                 //Replica::simple_auth() // Replica::user() and all related helper methods to SimpleAuth
+
+                "__RSA_MTH_DESC"                => '',
 
                 /*
                 |--------------------------------------------------------------------------
@@ -2467,6 +2590,7 @@ class Replica
                 |
                 |
                 */
+
                 'user_authorized_list'         =>  REPLICA_ROOT_DIR.  self::_whitespace_slashes(REPLICA_CUSTOM_CORE_DIR).DS.self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_DIR).DS.self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_SIMPLEAUTH_DIR).DS.self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_SIMPLEAUTH_FILE_DB).'.'.EXT,
 
                 'user_login_success_url'       =>  self::get_base_uri().'user/profile.html',
@@ -2498,8 +2622,9 @@ class Replica
                 'user_case_session_expired'             => 'session',
                 'user_case_logout'                      => 'logout',
 
-
                 //Replica::input_exists()
+
+                "__RIE_MTH_DESC"                        => '',
 
                 'input_exists_case_post'                => 'post',
                 'input_exists_case_get'                 => 'get',
