@@ -7,7 +7,7 @@
  *
  * @package: Replica
  * @author: Abdikadir Adan (Sharif)  -url [http://sharif.co] -Email [hello@sharif.co]
- * @url: http://replica.sharif.co
+ * @url: http://replica.hub.sharif.co
  * @author: -Github [sp01010011]
  * @filesource: core/Replica.php
  *
@@ -453,6 +453,7 @@ class Replica
                                 {
                                     //create new class from the application
                                     new $config['class']();
+
 
                                     //kill the application from loading anything else
                                     exit;
@@ -1256,6 +1257,27 @@ class Replica
         //Prepare the default
         $default =(self::_check_file(CURRENT_THEME_DIR.self::get_system('theme_partial').DS.$partial.self::get_system('ext'))) ? CURRENT_THEME_DIR.self::get_system('theme_partial').DS.$partial.self::get_system('ext') : null;
 
+
+        ###### START OF PAGE SPECIFIC EXTRA OPTIONS #######
+
+        //Default footer option - give the option to turn off footer widgets if there are any
+        $footer_widgets = isset($params['footer-widgets']) ? $params['footer-widgets'] : true;
+
+        //Set additional page specific CSS
+        $css     = isset($params['css']) ? $params['css'] : '';
+
+        //Set Inline stylesheet
+        $style   = isset($params['style']) ? $params['style'] : '';
+
+        //Set additional page specific JS
+        $js     = isset($params['js']) ? $params ['js'] : '';
+
+        //Set inline js
+
+        $script = isset($params['script']) ? $params['script'] : '';
+
+        ###### END OF PAGE SPECIFIC EXTRA OPTIONS ########
+
         #TEST TO SEE IF SPECIFIC PART IS REQUESTED
         if (in_array($type, self::get_system('include_partial_header')))
         {
@@ -1338,6 +1360,13 @@ class Replica
         //Convert type to lowercase for case matching
         $type = strtolower($type);
 
+        //Check for page inline css
+        $inline_css = isset($assets['styles']) ? $assets['styles'] : '';
+
+        //check for page inline JavaScript
+        $inline_js = isset($assets['scripts']) ? $assets['styles'] : '';
+
+
         //Initialize @$auto_dumper variable to collect information
         $auto_dumper="<!--".self::get_system('system_name')." ".self::get_system('system_version')." assets  auto-dump: {$type} //-->".PHP_EOL;
 
@@ -1365,17 +1394,20 @@ class Replica
                     //determine the type of requested resource
                     if(in_array($type,self::get_system('assets_load_css')))
                     {
+
                         //If the request type is stylesheet only deal with css and assign all of the to the dumper
                         $auto_dumper.='<link rel="stylesheet" href="' . $url_separator . self::get_system('assets_dir_name') . '/' . CURRENT_THEME_NAME . '/' . $asset .'">' . PHP_EOL;
 
+
                     }elseif(in_array($type,self::get_system('assets_load_js')))
                     {
+
+
                         //Or if the request type is javascript assign all verified javascript files to the dumper
                         $auto_dumper.='<script src="' . $url_separator . self::get_system('assets_dir_name') . '/' . CURRENT_THEME_NAME . '/' . $asset .'"> </script>' . PHP_EOL;
                     }
                 }
             }
-
 
             //Dump everything to the page
             return $auto_dumper;
@@ -1808,7 +1840,7 @@ class Replica
      * @param $token
      * @return bool|string
      */
-    public static function token($action, $token)
+    public static function token($action, $token='')
     {
         switch(strtolower($action))
         {
@@ -2279,7 +2311,7 @@ class Replica
    | Replica::send_email()
    |--------------------------------------------------------------------------
    |
-   | A method that will allow to send simple message using the php mail function
+   | A basic method that will allow to send simple message using the php mail function
    |
    |
    */
@@ -2318,8 +2350,18 @@ class Replica
         $headers.='Content-Type: text/html; charset=ISO-8859-1'."\r\n";
 
         //get the message from the options
+        if(isset($options['message']))
+        {
+            //Although this step should be completed in validation process, in case it is
+            // missed catch if body of the message is missing.
 
-        $message = isset($options['message']) ? $options['message'] : self::get_system('send_email_empty_message');
+            $message = $options['message'];
+
+        }else
+        {
+            //return error that email body is missing message
+            return self::get_system("send_email_body_missing");
+        }
 
         // send the mail
         if(mail($to, $subject, $message, $headers))
@@ -2334,7 +2376,7 @@ class Replica
 
     /*
     |--------------------------------------------------------------------------
-    | Replica::se()
+    | Replica::send()
     |--------------------------------------------------------------------------
     |
     | Alias to Replica::send_email()
@@ -2346,7 +2388,7 @@ class Replica
      * @param array $opt
      * @return array
      */
-    public static function se($opt=[])
+    public static function send($opt=[])
     {
         return self::send_email($opt);
     }
@@ -2411,7 +2453,7 @@ class Replica
                 'system_state'                  =>  true,
                 'system_version'                =>  0.01,           //do not manually change this
                 'system_release_date'           =>  '12/08/2014',
-                'system_url'                    =>  'http://replica.sharif.co',
+                'system_url'                    =>  'http://replica.hub.sharif.co',
 
                 #USER CUSTOMIZATION
 
@@ -2498,6 +2540,7 @@ class Replica
 
                 'send_email_message_sent_success'   => "Thank you %s, your message has been successfully sent",
                 'sent_email_message_sent_failed'    => "Oh no, something went wrong, unable to sent your message",
+                'send_email_body_missing'           => "Sorry but email must contain body to be processed",
 
                 'send_email_contact_name'           => 'contact_name',
                 'send_email_contact_email'          => 'contact_email',

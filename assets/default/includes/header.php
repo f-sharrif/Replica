@@ -17,6 +17,9 @@ use Replica as R;
     <meta name="viewport"    content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" href="http://sharif.co/favicon.ico">
     <?=R::al('css',['css/bootstrap.min.css','css/styles.css','css/color.css']); ?>
+    <?=@$css;?>
+    <?=@$style;?>
+
 </head>
 <body>
 <div class="wrapper center-text">

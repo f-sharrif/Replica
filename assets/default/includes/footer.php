@@ -1,9 +1,13 @@
 <?php
 if(!defined('REPLICA')) {die('Sorry direct access to this file not allowed');}
 
+if($footer_widgets)
+{
+    echo Replica::include_partial('widgets','events-widget');
+}
+
 ?>
 
-<?=Replica::include_partial('widgets','events-widget');?>
 
 <div class="text-center">
 <footer>
@@ -19,6 +23,6 @@ if(!defined('REPLICA')) {die('Sorry direct access to this file not allowed');}
 </div>
 </div>
 
-<?=Replica::al('js',['js/script.js']);?>
+<?=Replica::al('js',['js/jquery.min.js','js/script.js']);?>
 </body>
 </html>

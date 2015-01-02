@@ -1,0 +1,39 @@
+.clearfix
+{
+    clear: both;
+}
+.login
+{
+    width: 450px;
+    margin: 100px auto;
+    border: 1px solid #efefef;
+    padding: 0 10px 10px 10px;
+}
+.login h2{
+    padding: 0 10px 10px 10px;
+    border-bottom: 1px solid #efefef;
+
+}
+.login input[type='text'],
+.login input[type='password']
+{
+    padding: 10px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+.login .submit-btn
+{
+    padding:8px;
+    outline: none;
+    cursor: hand;
+    border: none;
+    float: right;
+    width: 50px;
+    color: #fff;
+    background-color: #27ae60;
+}
+
+.login .submit-btn:hover
+{
+    opacity: .5;
+}

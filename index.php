@@ -7,7 +7,7 @@
      *
      * @package: Replica
      * @author: Abdikadir Adan (Sharif)  -url [http://sharif.co] -Email [hello@sharif.co]
-     * @url: http://replica.sharif.co
+     * @url: http://replica.hub.sharif.co
      * @author: -Github [sp01010011]
      * @filesource: index.php
      *

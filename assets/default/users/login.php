@@ -1,15 +1,16 @@
 <?php
 if(!defined('REPLICA')) {die('Sorry direct access to this file not allowed');}
 
-Replica::ip('top','header',[
+Replica::inc_part('top','header',[
     'title' => $title,
     'meta_description'  => $meta_description,
-    'meta_keywords'     => $meta_keywords
+    'meta_keywords'     => $meta_keywords,
+    'css'               => Replica::assets_load('css',['css/login.css']),
 ]);
 
 
 
-if(isset($_POST['username']))
+if(Replica::input_exists())
 {
     Replica::user('login',['username'=>Replica::in('username'),'password'=>Replica::in('password')]);
 }
@@ -17,24 +18,28 @@ if(isset($_POST['username']))
 
 ?>
 
+
+
 <div class="justify-text">
 
     <?php
         if(!Replica::session('exists',['name'=>'id'])):
     ?>
-    <h2> Login to your account</h2>
-    <hr>
-    <form action="" method="post">
+    <div class="login">
+        <h2> Login to your account</h2>
 
-        <label for="username"> Username</label>
-        <input type="text" name="username" id="username" placeholder="Enter your username">
-        <br>
-        <label for="password">Password</label>
-        <input type="password" name="password" id="password" placeholder="Enter your password">
+        <form action="" method="post">
 
-        <input type="submit" value="login">
-    </form>
+            <label for="username"> Username</label>
+            <input type="text" name="username" id="username" placeholder="Enter your username">
+            <br>
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password" placeholder="Enter your password">
 
+            <button type="submit" class="submit-btn">Login</button>
+            <div class="clearfix"></div>
+        </form>
+    </div>
     <?php endif;
 
     if(Replica::session('exists', ['name'=>'id'])):
@@ -45,8 +50,6 @@ if(isset($_POST['username']))
 
         <?php
 
-
-        //Replica::in() = Replica::input()
 
         if(Replica::in('logout','get')=='true' )
             {
@@ -65,8 +68,7 @@ if(isset($_POST['username']))
 
 <?php
 
-//Replica::ip() = Replica::include_partial();
-Replica::ip('footer','footer');
+Replica::inc_part('footer','footer',['footer-widgets'=>false]);
 
 ?>
 

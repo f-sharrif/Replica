@@ -21,11 +21,10 @@
                 <section>
                     <h4>Advanced Exceptions Details</h4>
                     <p>
-                         <pre>
-                            <?php var_dump($advanced_exception_details); ?>
-                        </pre>
 
+                            <?php Replica::dd($advanced_exception_details); ?>
                     </p>
+
                 </section>
             </div>
 
