@@ -23,3 +23,4 @@ use Replica as R;
 </head>
 <body>
 <div class="wrapper center-text">
+    <?=Replica::debug();?>

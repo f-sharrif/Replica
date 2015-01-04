@@ -24,5 +24,7 @@ if($footer_widgets)
 </div>
 
 <?=Replica::al('js',['js/jquery.min.js','js/script.js']);?>
+<?=@$js;?>
+<?=@$script;?>
 </body>
 </html>

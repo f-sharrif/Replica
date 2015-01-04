@@ -46,6 +46,7 @@ class Replica
     | @var $_scan_dir_excludes => directories to exclude from scan dir result
     | @var $_module_list => store list of modules
     | @var $_active_modules => list of active modules
+    | @var $_debug_bar => holds the debug bar contents to be displayed when debug mode =true
     |
     */
 
@@ -71,12 +72,15 @@ class Replica
 
     private static
 
+        //debug bar when debug mode is on
+        $_debug_bar,
+
         //list of directories to exclude from scan dir result
         $_scan_dir_excludes =['.','..'];
 
     /*
     |--------------------------------------------------------------------------
-    | Class Properties: Public
+    | Class Properties: PUBLIC
     |--------------------------------------------------------------------------
     |
     | @var $theme_config : the current theme configuration file
@@ -89,22 +93,19 @@ class Replica
         $theme_config= null;
 
 
-    ############################################################################
-    #                             INIT THE APP                                 #
-    ############################################################################
     /*
     |--------------------------------------------------------------------------
-    | >--------------RUN--->(.) BOOTING APPLICATION...
+    | Constructor method
     |--------------------------------------------------------------------------
     |
-    | The run method calls the dispatch() method and load the application
+    | At this capacity, constructors methods only job is to register Replica
+    | exception handler class on boot.
     |
     */
 
     /**
-     * @return mixed
+     *
      */
-
     public  function __construct()
     {
         //Register the Exception handler
@@ -112,23 +113,24 @@ class Replica
 
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Replica->run()
+    |--------------------------------------------------------------------------
+    |
+    | Bootstraps the application, and runs the dispatcher.
+    |
+    */
+
+    /**
+     * @return mixed
+     */
     public function run()
     {
 
 
         #< START OF SYSTEM CONFIGURATION
-
-        /*
-        |--------------------------------------------------------------------------
-        | INTERNAL CONFIGURATION OPTIONS *** DO NOT MODIFY ***
-        |--------------------------------------------------------------------------
-        |
-        | Unless you know what you are doing do not modify any of the following
-        | configuration, they are depended on through out the system, one inappropriate
-        | change will cause breakdown of the overall system.
-        |
-        */
-
 
         /*
         |--------------------------------------------------------------------------
@@ -161,102 +163,8 @@ class Replica
         |    If the debug mode is set to true, get all possible errors shown
         |
         */
-        if (self::get_system('debug_mode'))
-        {
-            ob_start();
 
-            //Set Error Display
-            ini_set('display_errors', 'On');
-            ini_set('html_errors', 0);
-
-            //Set Error Reporting
-            error_reporting(-1);
-
-            //Shutdown Handler
-            function ShutdownHandler()
-            {
-                if (@is_array($error = @error_get_last())) {
-                    return (@call_user_func_array('ErrorHandler', $error));
-                }
-
-                return true;
-            }
-
-
-
-            register_shutdown_function('ShutdownHandler');
-
-            //Error handler
-
-            function ErrorHandler($type, $message, $file, $line)
-            {
-                $_ERRORS = Array(
-                    0x0001 => 'E_ERROR',
-                    0x0002 => 'E_WARNING',
-                    0x0004 => 'E_PARSE',
-                    0x0008 => 'E_NOTICE',
-                    0x0010 => 'E_CORE_ERROR',
-                    0x0020 => 'E_CORE_WARNING',
-                    0x0040 => 'E_COMPILE_ERROR',
-                    0x0080 => 'E_COMPILE_WARNING',
-                    0x0100 => 'E_USER_ERROR',
-                    0x0200 => 'E_USER_WARNING',
-                    0x0400 => 'E_USER_NOTICE',
-                    0x0800 => 'E_STRICT',
-                    0x1000 => 'E_RECOVERABLE_ERROR',
-                    0x2000 => 'E_DEPRECATED',
-                    0x4000 => 'E_USER_DEPRECATED'
-                );
-
-                if (!@is_string($name = @array_search($type, @array_flip($_ERRORS)))) {
-                    $name = 'E_UNKNOWN';
-                }
-
-                return (print(@sprintf("%s Error in file \xBB%s\xAB at line %d: %s\n", $name, @basename($file), $line, $message)));
-            }
-
-
-
-            $old_error_handler = set_error_handler("ErrorHandler");
-
-            //Show debug bar
-            echo "<div style='width:100%;  overflow: hidden; color: #fff; height: 25px; padding: 5px; margin-bottom: 45px; background-color:#e74c3c; position: absolute; top:0; left: 0;'> <strong style='color: #fff; padding-right: 5px; border-right: 1px solid #fff;'> DEBUG MODE</strong>";
-
-            //Show link to system configuration
-            if(self::input_get('debug')!="show_system_config_settings")
-            {
-                echo "<a href='?debug=show_system_config_settings' style='text-decoration: none; color:#fff; font-size: 12px;  padding: 4px 45px 4px 4px; float: right;'> Show System Configuration Settings</a>";
-            }
-
-            echo "</div>";
-
-            //Show system configuration
-            if(!is_null(self::input_get('debug')) && self::input_get('debug')=='show_system_config_settings')
-            {
-                //instantiate new replica reflection
-                $r_d = new ReflectionClass('Replica');
-
-                //format the output
-                echo  "<div style='width::70%; padding: 15px; margin: 0 auto; border: 2px solid #d35400; border-radius: 5px; background-color: #f39c12'; color: #fff; font-size: 1.3em;'><h1> Replica Diagnosics</h1><hr> <pre>";
-
-                //Start the system configuration
-                echo "<h2>Replica Configuration</h2>";
-
-                //Dump detailed system configuration
-                var_dump(self::_system_configuration_settings());
-
-                //Start the class reflection
-                echo "<h2>Replica Methods</h2>";
-
-                //dump detailed class information
-                var_dump($r_d->getMethods());
-
-                //end process
-                echo "</pre></div>";
-
-            }
-
-        }
+        $this->_debugger();
 
 
 
@@ -273,6 +181,9 @@ class Replica
         return $this->dispatch();
 
     }
+
+
+
 
     ############################################################################
     #               EXCLUSIVE REPLICA PRIVATE INTERNAL METHODS                 #
@@ -511,6 +422,162 @@ class Replica
 
         return explode('/', rtrim(filter_var(self::input_get($q,'get'), FILTER_SANITIZE_URL),'/'));
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | _debugger()
+    |--------------------------------------------------------------------------
+    | Prepares the debugging, and dumps the configuration information
+    |
+    */
+
+    private function _debugger()
+    {
+        if (self::get_system('debug_mode'))
+        {
+
+
+            //Set Error Display
+            ini_set('display_errors', 'On');
+            ini_set('html_errors', 0);
+
+            //Set Error Reporting
+            error_reporting(-1);
+
+            //Shutdown Handler
+            function ShutdownHandler()
+            {
+                if (@is_array($error = @error_get_last())) {
+                    return (@call_user_func_array('ErrorHandler', $error));
+                }
+
+                return true;
+            }
+
+
+
+            register_shutdown_function('ShutdownHandler');
+
+            //Error handler
+
+            function ErrorHandler($type, $message, $file, $line)
+            {
+                $_ERRORS = Array(
+                    0x0001 => 'E_ERROR',
+                    0x0002 => 'E_WARNING',
+                    0x0004 => 'E_PARSE',
+                    0x0008 => 'E_NOTICE',
+                    0x0010 => 'E_CORE_ERROR',
+                    0x0020 => 'E_CORE_WARNING',
+                    0x0040 => 'E_COMPILE_ERROR',
+                    0x0080 => 'E_COMPILE_WARNING',
+                    0x0100 => 'E_USER_ERROR',
+                    0x0200 => 'E_USER_WARNING',
+                    0x0400 => 'E_USER_NOTICE',
+                    0x0800 => 'E_STRICT',
+                    0x1000 => 'E_RECOVERABLE_ERROR',
+                    0x2000 => 'E_DEPRECATED',
+                    0x4000 => 'E_USER_DEPRECATED'
+                );
+
+                if (!@is_string($name = @array_search($type, @array_flip($_ERRORS)))) {
+                    $name = 'E_UNKNOWN';
+                }
+
+                return (print(@sprintf("%s Error in file \xBB%s\xAB at line %d: %s\n", $name, @basename($file), $line, $message)));
+            }
+
+            $old_error_handler = set_error_handler("ErrorHandler");
+
+            //Start the php output buffering to store the echoed content
+            ob_start();
+            echo PHP_EOL."<!--- START OF REPLICA DEBUGGER //--> ".PHP_EOL;
+            //Show debug bar
+            echo "<div style='width:100%;overflow: hidden; text-align: left; color: #fff; height: 25px; padding: 5px; margin-bottom: 45px; background-color:#e74c3c; position: absolute; top:0; left: 0;'> <strong style='color: #fff; padding-right: 5px; border-right: 1px solid #c0392b;'> DEBUG MODE</strong>";
+
+            //Show link to system configuration
+            if(self::input_get('debug')!="show_system_config_settings")
+            {
+                //set up the link to initially have system generate debug information
+                echo "<a  href='?debug=show_system_config_settings' style='text-decoration: none; color:#fff; font-size: 12px;  padding: 4px 45px 4px 4px; float: right;'> Show System Configuration Settings</a>";
+            }else
+            {
+                //show the hide/show link to toggle the debug information
+                echo "<a id='toggle-debug-info' href='?debug=show_system_config_settings' style='text-decoration: none; color:#fff; font-size: 12px;  padding: 4px 45px 4px 4px; float: right;'> Hide/Show System Config</a>";
+            }
+
+            //end the div for the debug-bar
+            echo "</div>";
+
+            //set up jQuery toggle  - load Google CDN JQuery Library
+            echo '
+                <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+                <script>
+                    $("#toggle-debug-info").click(function(e){
+                        e.preventDefault();
+                        $("#debug-info").slideToggle();
+                    });
+                </script>
+            ';
+
+            //Show system configuration
+            if(!is_null(self::input_get('debug')) && self::input_get('debug')=='show_system_config_settings')
+            {
+                //instantiate new replica reflection
+                $r_d = new ReflectionClass('Replica');
+
+                //format the output
+                echo  "<div id='debug-info' style='width::80%; text-align:left; padding: 15px; margin: 40px auto; border: 1px solid #efefef; border-top: 15px solid #c0392b; border-radius: 5px; background-color: #ffffff'; color: #fff; font-size: 1.3em;'><h1 style='padding:2px; border-bottom: 1px solid #efefef;'> Replica Debugging</h1>";
+
+                // generate about the system
+                echo "<h3 style='padding:2px; border-bottom: 1px solid #efefef; width:40%;'> About Replica </h3>";
+                echo "<pre>";
+                //Display current version
+                echo "Replica Version: ", self::get_system('system_version')."<br>";
+
+                //Display current version release date
+                echo "Release Date: ", self::get_system('system_release_date')."<br>";
+
+                //Display the replica home url
+                echo "Support URL: <a href='".self::get_system('system_url')."'> ".self::get_system('system_url')."</a><br>";
+
+                echo "</pre>";
+
+                //Start the system configuration
+                echo"<h2 style='padding:2px; width:40%; border-bottom: 1px solid #efefef;'>Replica Configuration</h2>";
+
+                //inline style the pre tag for replica configuration dump
+                echo "<pre style='background-color: #e74c3c;background-image: -webkit-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:    -moz-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:     -ms-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:      -o-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:         linear-gradient(#e74c3c 50%, #c0392b 50%);background-position: 0 1px;background-repeat: repeat;background-size: 48px 48px;border-radius: 5px;color: #f6f6f6;line-height: 24px;padding: 24px;'>";
+
+                //Dump detailed system configuration
+                echo var_dump(self::_system_configuration_settings());
+
+                //end the pre tag for Replica config var_dump
+                echo "</pre>";
+                //Start the class reflection
+                echo "<h2 style='padding:2px; width:40%; border-bottom: 1px solid #efefef;'>Replica Methods</h2>";
+
+                //inline style pre tag for Replica methods list
+                echo "<pre style='background-color: #e74c3c;background-image: -webkit-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:    -moz-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:     -ms-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:      -o-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:         linear-gradient(#e74c3c 50%, #c0392b 50%);background-position: 0 1px;background-repeat: repeat;background-size: 48px 48px;border-radius: 5px;color: #f6f6f6;line-height: 24px;padding: 24px;'>";
+
+                //dump detailed class information
+                echo var_dump($r_d->getMethods());
+
+                //end process
+                echo  "</pre></div>";
+                echo PHP_EOL."<!-- END OF REPLICA DEBUGGER //-->".PHP_EOL;
+
+            }
+
+            //process the $debug_bar
+            self::$_debug_bar=$_debug_bar = ob_get_contents();
+
+            //clean up the output buffering
+            ob_end_clean();
+        }
+
+    }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -880,6 +947,29 @@ class Replica
     #               PUBLICLY ACCESSIBLE STATIC METHODS                         #
     ############################################################################
 
+    /*
+    |--------------------------------------------------------------------------
+    | Replica::debug()
+    |--------------------------------------------------------------------------
+    | displays the debug information when the debug mode is on...
+    |
+    */
+
+    /**
+     * @return null
+     */
+    public static function debug()
+    {
+        //Although has been checked already, double check to verify debug mode is on
+        if(self::get_system('debug_mode'))
+        {
+           //return the debug content
+            return self::$_debug_bar;
+        }
+
+        //if the debug mode is off than return null
+        return null;
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -1254,27 +1344,40 @@ class Replica
         //Request require file
         $request = null;
 
-        //Prepare the default
-        $default =(self::_check_file(CURRENT_THEME_DIR.self::get_system('theme_partial').DS.$partial.self::get_system('ext'))) ? CURRENT_THEME_DIR.self::get_system('theme_partial').DS.$partial.self::get_system('ext') : null;
+        if($partial!="")
+        {
+            //Prepare the default
+            $default =(self::_check_file(CURRENT_THEME_DIR.self::get_system('theme_partial').DS.$partial.self::get_system('ext'))) ? CURRENT_THEME_DIR.self::get_system('theme_partial').DS.$partial.self::get_system('ext') : null;
+        }
+        else
+        {
+            $default =null;
+        }
+
 
 
         ###### START OF PAGE SPECIFIC EXTRA OPTIONS #######
+        /*
+         * These page specific extra options of include_partial() method are
+         * designed to be a helpers to Replica::asset_load() method,
+         * therefore, it is advisable most of these options are used
+         * only with header and footer partials.
+         */
 
         //Default footer option - give the option to turn off footer widgets if there are any
         $footer_widgets = isset($params['footer-widgets']) ? $params['footer-widgets'] : true;
 
-        //Set additional page specific CSS
+        //Set additional page specific external CSS to be loaded via Replica::load_assets() to specific page as needed.
         $css     = isset($params['css']) ? $params['css'] : '';
 
-        //Set Inline stylesheet
-        $style   = isset($params['style']) ? $params['style'] : '';
+        //Set Inline stylesheet to be embedded to each template partial as needed.
+        $style   = isset($params['style']) ? "<!--".self::get_system('system_name')." ".self::get_system('system_version')." assets  auto-dump: embedded cascading stylesheet //-->" .$params['style'] : '';
 
-        //Set additional page specific JS
+        //Set additional page specific external JS to be loaded via Replica::load_assets() to specific page as needed.
         $js     = isset($params['js']) ? $params ['js'] : '';
 
-        //Set inline js
-
-        $script = isset($params['script']) ? $params['script'] : '';
+        //Set inline js to be embedded to each template partial as needed
+        $script = isset($params['script']) ? "<!--".self::get_system('system_name')." ".self::get_system('system_version')." assets  auto-dump: embedded JavaScript //-->" .$params['script'] : '';
 
         ###### END OF PAGE SPECIFIC EXTRA OPTIONS ########
 
@@ -1360,12 +1463,12 @@ class Replica
         //Convert type to lowercase for case matching
         $type = strtolower($type);
 
-        //Check for page inline css
-        $inline_css = isset($assets['styles']) ? $assets['styles'] : '';
+        ############## NOTE ############
 
-        //check for page inline JavaScript
-        $inline_js = isset($assets['scripts']) ? $assets['styles'] : '';
-
+        /*
+         * Inline css, javascript and loading page specific css or javascript
+         * external files are processed by the Replica::include_partial() method.
+         */
 
         //Initialize @$auto_dumper variable to collect information
         $auto_dumper="<!--".self::get_system('system_name')." ".self::get_system('system_version')." assets  auto-dump: {$type} //-->".PHP_EOL;
@@ -2079,8 +2182,6 @@ class Replica
 
                     return true;
                 }
-
-
             }
         }
 
@@ -2113,8 +2214,13 @@ class Replica
             case self::get_system('user_case_login'):
 
                 //call simple_auth() method and login
-                return self::simple_auth($data['username'], $data['password']);
+                if(!self::simple_auth($data['username'], $data['password']))
+                {
+                    //Get the invalid username or password message
+                    return self::get_system('user_invalid_username_password');
+                }
 
+                break;
             //case logout attempt to logout user
             case self::get_system('user_case_logout'):
 
@@ -2660,6 +2766,8 @@ class Replica
                 'user_session_last_activity'            => 'last_activity',
                 'user_session_expired_flash_label'      => 'session_expired',
                 'user_session_expired_flash_message'    => 'Your session has expired for inactivity, you must login again!',
+
+                'user_invalid_username_password'        => 'Invalid username or password',
 
                 'user_case_login'                       => 'login',
                 'user_case_session_expired'             => 'session',

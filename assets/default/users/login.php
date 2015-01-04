@@ -8,11 +8,9 @@ Replica::inc_part('top','header',[
     'css'               => Replica::assets_load('css',['css/login.css']),
 ]);
 
-
-
 if(Replica::input_exists())
 {
-    Replica::user('login',['username'=>Replica::in('username'),'password'=>Replica::in('password')]);
+     $login=Replica::user('login',['username'=>Replica::in('username'),'password'=>Replica::in('password')]);
 }
 
 
@@ -26,13 +24,19 @@ if(Replica::input_exists())
         if(!Replica::session('exists',['name'=>'id'])):
     ?>
     <div class="login">
+        <?php if(isset($login)): ?>
+            <p class="error"><?=$login;?></p>
+        <?php endif;?>
+
         <h2> Login to your account</h2>
 
         <form action="" method="post">
 
+            <p class="error" id="username-error"></p>
             <label for="username"> Username</label>
             <input type="text" name="username" id="username" placeholder="Enter your username">
             <br>
+            <p class="error" id="password-error"></p>
             <label for="password">Password</label>
             <input type="password" name="password" id="password" placeholder="Enter your password">
 
@@ -68,7 +72,37 @@ if(Replica::input_exists())
 
 <?php
 
-Replica::inc_part('footer','footer',['footer-widgets'=>false]);
+Replica::inc_part('footer','footer',['footer-widgets'=>false,
+'script'=>'
+<script>
+    $("form").submit(function(e){
+        e.preventDefault();
+
+        var username = $("#username").val();
+        var password = $("#password").val();
+
+        if(username==""){
+            $("#username-error").html("Please enter username").fadeIn();
+        }else{
+            $("#username-error").html("");
+        }
+
+        if(password==""){
+            $("#password-error").html("Please enter password").fadeIn();
+        }else{
+            $("#password-error").html("");
+        }
+
+
+        if(username !="" && password !="")
+        {
+            return true;
+        }
+    });
+</script>
+
+'
+]);
 
 ?>
 
