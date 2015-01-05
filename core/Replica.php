@@ -509,8 +509,12 @@ class Replica
             //end the div for the debug-bar
             echo "</div>";
 
-            //set up jQuery toggle  - load Google CDN JQuery Library
-            echo '
+            //Show system configuration
+            if(!is_null(self::input_get('debug')) && self::input_get('debug')=='show_system_config_settings')
+            {
+
+                //set up jQuery toggle  - load Google CDN JQuery Library
+                echo '
                 <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
                 <script>
                     $("#toggle-debug-info").click(function(e){
@@ -518,11 +522,8 @@ class Replica
                         $("#debug-info").slideToggle();
                     });
                 </script>
-            ';
+                ';
 
-            //Show system configuration
-            if(!is_null(self::input_get('debug')) && self::input_get('debug')=='show_system_config_settings')
-            {
                 //instantiate new replica reflection
                 $r_d = new ReflectionClass('Replica');
 
@@ -546,22 +547,16 @@ class Replica
                 //Start the system configuration
                 echo"<h2 style='padding:2px; width:40%; border-bottom: 1px solid #efefef;'>Replica Configuration</h2>";
 
-                //inline style the pre tag for replica configuration dump
-                echo "<pre style='background-color: #e74c3c;background-image: -webkit-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:    -moz-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:     -ms-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:      -o-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:         linear-gradient(#e74c3c 50%, #c0392b 50%);background-position: 0 1px;background-repeat: repeat;background-size: 48px 48px;border-radius: 5px;color: #f6f6f6;line-height: 24px;padding: 24px;'>";
-
                 //Dump detailed system configuration
-                echo var_dump(self::_system_configuration_settings());
+                echo self::dd(self::_system_configuration_settings());
 
                 //end the pre tag for Replica config var_dump
                 echo "</pre>";
                 //Start the class reflection
                 echo "<h2 style='padding:2px; width:40%; border-bottom: 1px solid #efefef;'>Replica Methods</h2>";
 
-                //inline style pre tag for Replica methods list
-                echo "<pre style='background-color: #e74c3c;background-image: -webkit-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:    -moz-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:     -ms-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:      -o-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:         linear-gradient(#e74c3c 50%, #c0392b 50%);background-position: 0 1px;background-repeat: repeat;background-size: 48px 48px;border-radius: 5px;color: #f6f6f6;line-height: 24px;padding: 24px;'>";
-
                 //dump detailed class information
-                echo var_dump($r_d->getMethods());
+                echo self::dd($r_d->getMethods());
 
                 //end process
                 echo  "</pre></div>";
@@ -1720,9 +1715,9 @@ class Replica
     public static function dd($var)
     {
 
-        echo "<div><pre>";
+        echo "<!-- Replica var_dump  Starts //--><div><pre style='background-color: #e74c3c;background-image: -webkit-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:    -moz-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:     -ms-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:      -o-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:         linear-gradient(#e74c3c 50%, #c0392b 50%);background-position: 0 1px;background-repeat: repeat;background-size: 48px 48px;border-radius: 5px;color: #f6f6f6;line-height: 24px;padding: 24px; word-wrap: break-word'>";
         var_dump($var);
-        echo "</pre></div>";
+        echo "</pre></div> <!--Replica var_dump ends //-->";
 
     }
 
@@ -2662,13 +2657,6 @@ class Replica
                 '__RRT_MTH_DESC'                 => "",
 
                 'redirect_to_error_tpl'        => self::_whitespace_slashes(REPLICA_THEME_ERRORS_TEMPLATE),
-                'redirect_to_404_title'        => self::_whitespace_slashes(REPLICA_404_CUSTOM_ERROR_TITLE),
-                'redirect_to_404_heading'      => self::_whitespace_slashes(REPLICA_404_CUSTOM_ERROR_HEADING),
-                'redirect_to_404_message'      => self::_whitespace_slashes(REPLICA_404_CUSTOM_ERROR_MESSAGE),
-
-                'redirect_to_403_title'        => self::_whitespace_slashes(REPLICA_403_CUSTOM_ERROR_TITLE),
-                'redirect_to_403_heading'      => self::_whitespace_slashes(REPLICA_403_CUSTOM_ERROR_HEADING),
-                'redirect_to_403_message'      => self::_whitespace_slashes(REPLICA_403_CUSTOM_ERROR_MESSAGE),
 
 
                 #Replica::assets_load()
