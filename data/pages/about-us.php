@@ -8,6 +8,7 @@ return [
     'meta_description'  => 'Facile is a simple php templating engine',
     'meta_keywords'     => 'Facile, PHP, Templating',
     'meta_charset'      => 'utf-8',
+    'display_nav'       => true,
     'template'          => 'full-width',
 
     //Page content

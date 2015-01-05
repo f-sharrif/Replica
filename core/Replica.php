@@ -108,6 +108,9 @@ class Replica
         //Register the Exception handler
         set_exception_handler([$this, "replica_exceptions_handler"]);
 
+        //Register shutdown handler
+        register_shutdown_function([$this,'replica_shutdown_handler']);
+
     }
 
 
@@ -507,7 +510,7 @@ class Replica
             if(!is_null(self::input_get('debug')) && self::input_get('debug')=='show_system_config_settings')
             {
 
-                //set up jQuery toggle  - load Google CDN JQuery Library
+                //Add the toggle option on the link, add Jquery via Google CDN
                 echo '
                 <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
                 <script>
@@ -709,16 +712,32 @@ class Replica
     |
     */
 
+
     /**
      * @param $path
      * @return mixed|null
+     * @throws Exception
      */
     protected static function _include_file($path)
     {
-        if (self::_check_file($path)) {
-            return require_once $path;
+        if (self::_check_file($path))
+        {
+            //check out the file in cmd for any possible syntax errors
+            $result = exec("php -l {$path}");
+
+            //make sure there is no syntax error before including
+            if(strstr($result, self::get_system('include_file_no_syntax_error')))
+            {
+                //now there is no syntax detected get the data file
+                return require_once $path;
+            }
+
+            //there is syntax error with file so throw exception
+            throw new Exception(sprintf(self::get_system("include_file_throw_exception"), $result), 500);
+
         }
 
+        //return null since file doesn't exist to begin with
         return null;
     }
 
@@ -835,14 +854,19 @@ class Replica
      * @return bool
      */
     public function replica_exceptions_handler(Exception $e)
-   {
+     {
        //extract the error code from the exception
        $code = (is_numeric($e->getCode())) ? $e->getCode() : 500;
 
        //Send it over to Redirect method to handle the view control
        return self::redirect_to($code,$e);
 
-   }
+    }
+
+    public function replica_shutdown_handler()
+    {
+        //throw new Exception("Internal Application error occurred", 500);
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -979,7 +1003,9 @@ class Replica
      */
     public static function _check_file($path)
     {
-        if (file_exists($path) && !is_dir($path) && is_readable($path)) {
+
+        if (file_exists($path) && !is_dir($path) && is_readable($path))
+        {
             return true;
         }
 
@@ -2615,6 +2641,11 @@ class Replica
                 'replica_exception_msg_500'     => '',
                 'replica_exception_msg_502'     => '',
                 'replica_exception_msg_503'     => '',
+
+                #self::_include_file()
+
+                'include_file_no_syntax_error' => "No syntax errors detected",
+                'include_file_throw_exception' => "There is a syntax error with: <strong>%s</strong>.",
 
                 #Replica::send_email()
 
