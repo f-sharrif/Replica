@@ -429,7 +429,7 @@ class Replica
     | Prepares the debugging, and dumps the configuration information
     |
     */
-    
+
 
     private function _debugger()
     {
@@ -2650,11 +2650,11 @@ class Replica
 
                 #Replica::send_email()
 
-                "__RSE_MTH_DESC"                => '',
+                "__RSE_MTH_DESC"                    => '',
 
-                'send_email_default_address'   => 'test@replica.sharif.co',
-                'send_email_default_subject'   => 'Message from your Replica site',
-                'send_email_cc_address'        => 'cc.test@replica.sharif.co',
+                'send_email_default_address'        => 'test@replica.sharif.co',
+                'send_email_default_subject'        => 'Message from your Replica site',
+                'send_email_cc_address'             => 'cc.test@replica.sharif.co',
 
                 'send_email_message_sent_success'   => "Thank you %s, your message has been successfully sent",
                 'sent_email_message_sent_failed'    => "Oh no, something went wrong, unable to sent your message",
@@ -2671,63 +2671,63 @@ class Replica
 
                 #Replica::redirect_to()
 
-                '__RRT_MTH_DESC'                 => "",
+                '__RRT_MTH_DESC'                    => "",
 
-                'redirect_to_error_tpl'        => self::_whitespace_slashes(REPLICA_THEME_ERRORS_TEMPLATE),
+                'redirect_to_error_tpl'             => self::_whitespace_slashes(REPLICA_THEME_ERRORS_TEMPLATE),
 
 
                 #Replica::assets_load()
 
-                "__RAL_MTH_DESC"               => '',
+                "__RAL_MTH_DESC"                    => '',
 
-                'assets_load_css'               => ['css','stylesheet','style','styles','c'],
-                'assets_load_js'                => ['js','javascript','script','scripts','j'],
-                'assets_load_counter_start'     =>  defined('AT_403_ON_DIR') ? 1 : 1, // determines the counter start point for dynamic separators
+                'assets_load_css'                   => ['css','stylesheet','style','styles','c'],
+                'assets_load_js'                    => ['js','javascript','script','scripts','j'],
+                'assets_load_counter_start'         =>  defined('AT_403_ON_DIR') ? 1 : 1, // determines the counter start point for dynamic separators
 
                 #Replica::widget_load()
 
-                "__RWL_MTH_DESC"                 => '',
+                "__RWL_MTH_DESC"                    => '',
 
-                'widget_load_navigation_system'  => ['nav','navigation','menu','mainmenu'],
-                'widget_load_widget'             => ['widget','widgets','addon','extension'],
+                'widget_load_navigation_system'     => ['nav','navigation','menu','mainmenu'],
+                'widget_load_widget'                => ['widget','widgets','addon','extension'],
 
 
                 #Replica::include_partial()
 
-                "__RIP_MTH_DESC"                 => '',
+                "__RIP_MTH_DESC"                    => '',
 
-                'include_partial_header'         => ['header','head','top'],
-                'include_partial_footer'         => ['footer','bottom'],
-                'include_partial_widget'         => ['widgets','widget','addon','addin'],
-                'include_partial_sidebar'        => ['sidebar','aside','left_sidebar','right_sidebar','justify_sidebar','top_sidebar','bottom_sidebar','middle_sidebar'],
+                'include_partial_header'            => ['header','head','top'],
+                'include_partial_footer'            => ['footer','bottom'],
+                'include_partial_widget'            => ['widgets','widget','addon','addin'],
+                'include_partial_sidebar'           => ['sidebar','aside','left_sidebar','right_sidebar','justify_sidebar','top_sidebar','bottom_sidebar','middle_sidebar'],
 
                 #Replica::scan_for()
 
-                "__RSF_MTH_DESC"                 => '',
+                "__RSF_MTH_DESC"                    => '',
 
-                'scan_for_dirs'                  => ['dir','dirs','directory','directories','folders','folder','non-file'],
-                'scan_for_non_dirs'              => ['non-dirs','files','file','document','documents','docs'],
+                'scan_for_dirs'                     => ['dir','dirs','directory','directories','folders','folder','non-file'],
+                'scan_for_non_dirs'                 => ['non-dirs','files','file','document','documents','docs'],
 
                 #Replica::Token()
 
-                "__RTK_MTH_DESC"                 => '',
+                "__RTK_MTH_DESC"                    => '',
 
-                'token_case_generate'            => 'generate',
-                'token_case_check'               => 'check',
+                'token_case_generate'               => 'generate',
+                'token_case_check'                  => 'check',
 
                 #Replica::session()
 
-                "__RSES_MTH_DESC"                => '',
+                "__RSES_MTH_DESC"                   => '',
 
-                'session_case_put'               => 'put',
-                'session_case_get'               => 'get',
-                'session_case_exists'            => 'exists',
-                'session_case_delete'            => 'delete',
-                'session_case_destroy'           => 'destroy',
+                'session_case_put'                  => 'put',
+                'session_case_get'                  => 'get',
+                'session_case_exists'               => 'exists',
+                'session_case_delete'               => 'delete',
+                'session_case_destroy'              => 'destroy',
 
                 //Replica::simple_auth() // Replica::user() and all related helper methods to SimpleAuth
 
-                "__RSA_MTH_DESC"                => '',
+                "__RSA_MTH_DESC"                    => '',
 
                 /*
                 |--------------------------------------------------------------------------
@@ -2745,26 +2745,26 @@ class Replica
                 |
                 */
 
-                'user_authorized_list'         =>  REPLICA_ROOT_DIR.  self::_whitespace_slashes(REPLICA_CUSTOM_CORE_DIR).DS.self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_DIR).DS.self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_SIMPLEAUTH_DIR).DS.self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_SIMPLEAUTH_FILE_DB).'.'.EXT,
+                'user_authorized_list'                  =>  REPLICA_ROOT_DIR.  self::_whitespace_slashes(REPLICA_CUSTOM_CORE_DIR).DS.self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_DIR).DS.self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_SIMPLEAUTH_DIR).DS.self::_whitespace_slashes(REPLICA_CUSTOM_MODULES_SIMPLEAUTH_FILE_DB).'.'.EXT,
 
-                'user_login_success_url'       =>  self::get_base_uri().'user/profile.html',
-                'user_login_failed_url'        =>  self::get_base_uri().'user/login.html?failed=true',
-                'user_logout_url'              =>  self::get_base_uri().'user/logout.html?success=true',
+                'user_login_success_url'                =>  self::get_base_uri().'user/profile.html',
+                'user_login_failed_url'                 =>  self::get_base_uri().'user/login.html?failed=true',
+                'user_logout_url'                       =>  self::get_base_uri().'user/logout.html?success=true',
 
-                'user_login_failed_flash_label'      =>  'login_failed',
-                'user_login_success_flash_label'     =>  'login_success',
-                'user_logout_flash_label'            =>  'logout_success',
+                'user_login_failed_flash_label'         =>  'login_failed',
+                'user_login_success_flash_label'        =>  'login_success',
+                'user_logout_flash_label'               =>  'logout_success',
 
-                'user_login_failed_flash_message'    =>  'Hello, sorry unable to log you into the system',
-                'user_login_success_flash_message'   =>  'Hello %s, you have been successfully logged in',
-                'user_logout_flash_message'          =>  'You have been successfully logged out of the system',
+                'user_login_failed_flash_message'       =>  'Hello, sorry unable to log you into the system',
+                'user_login_success_flash_message'      =>  'Hello %s, you have been successfully logged in',
+                'user_logout_flash_message'             =>  'You have been successfully logged out of the system',
 
-                'user_account_username'        => 'username',
-                'user_account_password'        => 'password',
-                'user_account_role'            => 'role',
-                'user_account_created_at'      => 'created_at',
-                'user_account_updated_at'      => 'updated_at',
-                'user_account_email'           => 'email',
+                'user_account_username'                 => 'username',
+                'user_account_password'                 => 'password',
+                'user_account_role'                     => 'role',
+                'user_account_created_at'               => 'created_at',
+                'user_account_updated_at'               => 'updated_at',
+                'user_account_email'                    => 'email',
 
                 'user_session_expiry_time'              => 300,
                 'user_session_loggedin_at'              => 'loggedin_at',
