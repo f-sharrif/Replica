@@ -120,16 +120,17 @@ Replica::inc_part('footer','footer',['footer-widgets'=>false, 'js'=>Replica::ass
 'script'=>'
 <script>
 $("form").submit(function(e){
-e.preventDefault();
 
 var fname = $("#contact_firstname").val();
 var lname = $("#contact_lastname").val();
 var email = $("#contact_email").val();
-var msg  = $("#contact_message").val();
+var msg   = $("#contact_message").val();
+var error = 0;
 
 if(fname=="")
 {
-    $("#fname-error").html("First name is required!").fadeIn();
+    $("#fname-error").html("First name is required!").fadeIn(); error ++;
+
 }else
 {
     $("#fname-error").fadeOut();
@@ -139,6 +140,7 @@ if(fname=="")
 if(lname=="")
 {
     $("#lname-error").html("Last name is required!").fadeIn();
+    error ++;
 }else
 {
     $("#lname-error").fadeOut();
@@ -148,6 +150,7 @@ if(lname=="")
 if(email=="")
 {
     $("#email-error").html("Email is required!").fadeIn();
+    error ++;
 }else
 {
     $("#email-error").fadeOut();
@@ -157,10 +160,17 @@ if(email=="")
 if(msg=="")
 {
     $("#message-error").html("Your must provide a message!").fadeIn();
+    error ++;
 }else
 {
     $("#message-error").fadeOut();
 }
+
+if(error > 0)
+{
+    e.preventDefault();
+}
+
 
 });
 </script>

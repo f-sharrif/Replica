@@ -105,12 +105,14 @@ class Replica
      */
     public  function __construct()
     {
+        //Register Error handler
+        set_error_handler([$this, 'replica_error_handler']);
+
         //Register the Exception handler
         set_exception_handler([$this, "replica_exceptions_handler"]);
 
         //Register shutdown handler
         register_shutdown_function([$this,'replica_shutdown_handler']);
-
     }
 
 
@@ -427,13 +429,12 @@ class Replica
     | Prepares the debugging, and dumps the configuration information
     |
     */
+    
 
     private function _debugger()
     {
         if (self::get_system('debug_mode'))
         {
-
-
             //Set Error Display
             ini_set('display_errors', 'On');
             ini_set('html_errors', 0);
@@ -441,50 +442,6 @@ class Replica
             //Set Error Reporting
             error_reporting(-1);
 
-            //Shutdown Handler
-            function ShutdownHandler()
-            {
-                if (@is_array($error = @error_get_last())) {
-                    return (@call_user_func_array('ErrorHandler', $error));
-                }
-
-                return true;
-            }
-
-
-
-            register_shutdown_function('ShutdownHandler');
-
-            //Error handler
-
-            function ErrorHandler($type, $message, $file, $line)
-            {
-                $_ERRORS = Array(
-                    0x0001 => 'E_ERROR',
-                    0x0002 => 'E_WARNING',
-                    0x0004 => 'E_PARSE',
-                    0x0008 => 'E_NOTICE',
-                    0x0010 => 'E_CORE_ERROR',
-                    0x0020 => 'E_CORE_WARNING',
-                    0x0040 => 'E_COMPILE_ERROR',
-                    0x0080 => 'E_COMPILE_WARNING',
-                    0x0100 => 'E_USER_ERROR',
-                    0x0200 => 'E_USER_WARNING',
-                    0x0400 => 'E_USER_NOTICE',
-                    0x0800 => 'E_STRICT',
-                    0x1000 => 'E_RECOVERABLE_ERROR',
-                    0x2000 => 'E_DEPRECATED',
-                    0x4000 => 'E_USER_DEPRECATED'
-                );
-
-                if (!@is_string($name = @array_search($type, @array_flip($_ERRORS)))) {
-                    $name = 'E_UNKNOWN';
-                }
-
-                return (print(@sprintf("%s Error in file \xBB%s\xAB at line %d: %s\n", $name, @basename($file), $line, $message)));
-            }
-
-            $old_error_handler = set_error_handler("ErrorHandler");
 
             //Start the php output buffering to store the echoed content
             ob_start();
@@ -758,6 +715,7 @@ class Replica
      */
     protected static function _whitespace_slashes($var)
     {
+        //remove white spaces and slashes from the beginning and end.
         return trim($var, "\x00..\x20/");
     }
 
@@ -860,13 +818,56 @@ class Replica
 
        //Send it over to Redirect method to handle the view control
        return self::redirect_to($code,$e);
-
     }
 
+    /**
+     * @return bool|mixed
+     */
     public function replica_shutdown_handler()
     {
-        //throw new Exception("Internal Application error occurred", 500);
+        if (@is_array($error = @error_get_last())) {
+            return (@call_user_func_array([$this,'replica_error_handler'], $error));
+        }
+
+        return true;
     }
+
+
+    /**
+     * @param $type
+     * @param $message
+     * @param $file
+     * @param $line
+     * @return int
+     */
+    public function replica_error_handler($type, $message, $file, $line)
+    {
+        $_ERRORS = Array(
+            0x0001 => 'E_ERROR',
+            0x0002 => 'E_WARNING',
+            0x0004 => 'E_PARSE',
+            0x0008 => 'E_NOTICE',
+            0x0010 => 'E_CORE_ERROR',
+            0x0020 => 'E_CORE_WARNING',
+            0x0040 => 'E_COMPILE_ERROR',
+            0x0080 => 'E_COMPILE_WARNING',
+            0x0100 => 'E_USER_ERROR',
+            0x0200 => 'E_USER_WARNING',
+            0x0400 => 'E_USER_NOTICE',
+            0x0800 => 'E_STRICT',
+            0x1000 => 'E_RECOVERABLE_ERROR',
+            0x2000 => 'E_DEPRECATED',
+            0x4000 => 'E_USER_DEPRECATED'
+        );
+
+        if (!@is_string($name = @array_search($type, @array_flip($_ERRORS)))) {
+            $name = 'E_UNKNOWN';
+        }
+
+        return (print(@sprintf("%s Error in file \xBB%s\xAB at line %d: %s\n", $name, @basename($file), $line, $message)));
+    }
+
+
 
     /*
     |--------------------------------------------------------------------------
