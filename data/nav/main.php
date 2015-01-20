@@ -1,4 +1,5 @@
 <?php
+
 return
 [
     'Home'              => Replica::get_base_uri(),

@@ -258,9 +258,18 @@ class Replica
 
         $ur =$this->_parse_uri_collections();
 
+
+
         //Check to see if we have at least one uri other than index is requested
         if(count($ur)>=1 && reset($ur)!="")
         {
+
+            //check to see if this page need to be redirected
+            if(self::link_to_social_media($ur[0]))
+            {
+               //Exit if there is a social media redirect link
+                exit;
+            }
 
             //Declare empty variable to assign the processed request bits
             $request='';
@@ -2507,6 +2516,34 @@ class Replica
     }
 
 
+    /*
+    |--------------------------------------------------------------------------
+    | Replica::link_to_social_media()
+    |--------------------------------------------------------------------------
+    |
+    | Redirect to registered social media link
+    |
+    |
+    */
+
+    public static function link_to_social_media($sm)
+    {
+        //Check to see if the requested social media exists
+        $social_media = self::get_system(strtolower($sm));
+
+        //If the social media is found
+        if(!empty($social_media))
+        {
+            //Redirect to that social media
+            self::redirect_to($social_media);
+            exit;
+        }
+
+       //return false by default
+        return false;
+
+    }
+
 
     ############################################################################
     #                   SYSTEM CONFIGURATION SETTINGS                          #
@@ -2784,6 +2821,17 @@ class Replica
 
                 'input_exists_case_post'                => 'post',
                 'input_exists_case_get'                 => 'get',
+
+
+                //Replica::link_to_social_media();
+
+                'in'                                    => 'https://www.linkedin.com/pub/abdikadir-a/33/975/542',
+                'g'                                     => 'http://google.com/plus',
+                'f'                                     => 'http://facebook.com/sharif',
+                't'                                     => 'http://twitter.com/sharif',
+                'p'                                     => 'http://pintrest.com/sharif',
+
+
             ];
     }
 
