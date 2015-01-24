@@ -1135,6 +1135,27 @@ class Replica
     }
 
     /*
+   |--------------------------------------------------------------------------
+   | _is_file()
+   |--------------------------------------------------------------------------
+   |
+   | Alias to _check_file(), which eventually will replace _check_file()
+   | in a future version of the software completely.
+   |
+   */
+
+    /**
+     * @param $path
+     * @return bool
+     */
+    public static function _is_file($path)
+    {
+        return self::_check_file($path);
+    }
+
+
+
+    /*
     |--------------------------------------------------------------------------
     | _is_dir($path)
     |--------------------------------------------------------------------------
@@ -1931,17 +1952,32 @@ class Replica
 
     /**
      * @param array $data
+     * @param array $options
      * @return bool|string
      */
-    public static function menu_generate($data=[])
+    public static function menu_generate($data=[], $options=[])
     {
+        //TODO: Finish implimenting navigation styling :: ON HOLD AS OF 01/24
+        // Plan to remove and rewrite menu_generate from grounds up.
+
+        $options_nav_ul_id = isset($options['ul_id']) ? " id='".$options['ul_id']."'" :"";
+
+        $options_nav_ul_class =isset($options['ul_class']) ? " class='".$options['ul_class']."'" :"";
+
+        $options_nav_ul_li_active_class = isset($options['ul_li_active']) ? " class='".$options ['ul_li_active']."'"  :"";
+
+        $options_nav_ul_li_ul_class= isset($options['ul_li_ul_class']) ? " class='".$options['ul_li_ul_class']."'" : "";
+
+        $options_nav_ul_li_ul_li_active_class= isset($options['ul_li_ul_li_active']) ? " class='".$options['ul_li_ul_li_active']."'" : "";
+
+        $options_nav_current_link = isset($options['current']) ? $options['current'] : "home";
 
         //Make sure there is at least one item in the array
         if(count($data)>=1)
         {
 
             //Initialize the nav var with ul
-            $nav ="<ul>";
+            $nav ="<ul".$options_nav_ul_id.$options_nav_ul_class.">";
 
             //loop through the data
             foreach($data as $label=>$menu)
@@ -1970,7 +2006,7 @@ class Replica
 
 
                     //Now prepare nav for sub ul ul>li>ul
-                    $nav.='<li><a href="'.$url.'">'.$label.'</a> <ul>';
+                    $nav.='<li><a href="'.$url.'">'.$label.'</a> <ul'.$options_nav_ul_li_ul_class.'>';
 
                     //Loop through
                     foreach($menu as $clabel=>$cmenu)
