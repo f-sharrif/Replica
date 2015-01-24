@@ -96,7 +96,7 @@ class Replica
     | Constructor method
     |--------------------------------------------------------------------------
     | At this capacity, constructors methods only job is to register Replica
-    | exception handler class on boot.
+    | exception handlers, session and page caching.
     |
     */
 
@@ -113,6 +113,16 @@ class Replica
 
         //Register shutdown handler
         register_shutdown_function([$this,'replica_shutdown_handler']);
+
+        //set custom php session name instead of default PHPSESSIONID
+        session_name(Replica::get_system('session_name'));
+
+        //Start session only it hasn't been started already
+        if(session_status()== PHP_SESSION_NONE) {session_start();}
+
+        //If the pages hasn't been cached already, then generate new cache
+        if(!self::session('exists',['name'=>'pages_cached_at'])){ $this->_generate_cached_pages(); }
+
     }
 
 
@@ -218,7 +228,7 @@ class Replica
 
         //check to see if the page uses special template
 
-        $custom_page_template = isset($data['template']) ? $data['template'] : null;
+        $with_custom_page_template = isset($data['template']) ? $data['template'] : null;
 
 
         //Send each variable in the page to the template
@@ -230,7 +240,7 @@ class Replica
 
         //Generate the view
 
-        return $this->make($custom_page_template);
+        return $this->make($with_custom_page_template);
 
     }
 
@@ -278,7 +288,7 @@ class Replica
             for($i=0; $i<count($ur); $i++)
             {
 
-                //Check to see if the current iterant is the last in the collection
+                //Check to see if the current inerrant is the last in the collection
                 if($i+1 == count($ur))
                 {
 
@@ -314,6 +324,10 @@ class Replica
             }
 
             //At this point we have our request file set and its time to evaluate for its existence
+
+            #LIST OF CACHED PAGES
+            //if(array_key_exists(self::hash('make',['string'=>self::get_system('path_to_pages_dir').$request.self::get_system('ext')]), $this->_fetch_cached_pages()))
+
             if(self::_check_file(self::get_system('path_to_pages_dir').$request.self::get_system('ext')))
             {
                 //Now it exists, lets turn on the flag that we have found our request
@@ -322,6 +336,7 @@ class Replica
                 //Assign the page to the page
                 $this->_page = self::get_system('path_to_pages_dir').$request;
             }
+
 
 
             //Verify that the flag for page found is turned on and if not
@@ -533,6 +548,103 @@ class Replica
             //clean up the output buffering
             ob_end_clean();
         }
+
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | _generate_cached_pages()
+    |--------------------------------------------------------------------------
+    |
+    | Caches all available page on load of the application
+    |
+    */
+
+    /**
+     * @return $this
+     */
+    private function _generate_cached_pages()
+    {
+
+        //Instantiate  directory iterator and scan the directory for pages
+        $dir = new RecursiveDirectoryIterator(self::get_system('path_to_pages_dir'));
+
+        //Set flag options, that should skips dots and set file as unix path
+        $dir->setFlags(FilesystemIterator::SKIP_DOTS | FilesystemIterator::UNIX_PATHS);
+
+        //Get all the files and the contained directory
+        $file = new RecursiveIteratorIterator($dir, RecursiveIteratorIterator::SELF_FIRST);
+
+        //Weed through the result and get only file with .php extension
+        $regex_match = new RegexIterator($file, '/^.+\.php$/i', RecursiveRegexIterator::GET_MATCH);
+
+        //Loop through the matched result
+        foreach($regex_match as $page)
+        {
+           //Loop one more time to eliminate arrays
+            foreach($page as $file)
+           {
+               //test if the file is readable
+               if(self::_check_file($file))
+               {
+                   //$cache[self::hash('make',['string'=>$file])] =$file;
+
+                   $page_name = 'cached_page_'.self::hash('make',['string'=>$file]);
+
+                   self::session('put',['name'=>$page_name, 'value'=>$file]);
+               }
+           }
+
+
+        }
+
+        //Set the flag that this method has been run with timestamp
+        self::session('put',['name'=>'pages_cached_at', 'value'=>time()]);
+
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | _fetch_cached_pages()
+    |--------------------------------------------------------------------------
+    |
+    | fetches list of all the cached pages and keeps it up to date
+    |
+    */
+
+    /**
+     * @return array
+     */
+    private function _fetch_cached_pages()
+    {
+       //initialize an array to store the cached list
+        $valid_list = [];
+
+        //Test to see if the current cache has expired or not
+        if(self::session('get',['name'=>'pages_cached_at'])+100<time())
+        {
+            //if the current cache expired, regenerate the cache
+            $this->_generate_cached_pages();
+        }else
+        {
+            //Now the cache is good, loop through
+            foreach ($_SESSION as $k => $v)
+            {
+                //only look for session key that starts with "cached_page_"
+                if (substr($k, 0, 12) == "cached_page_")
+                {
+                    //Construct list of all the pages
+                    $valid_list[$k] = $v;
+                }
+            }
+
+            //return the list
+            return $valid_list;
+
+        }
+
+        //rerun the method more more time
+        return $this->_fetch_cached_pages();
 
     }
 
@@ -1181,6 +1293,7 @@ class Replica
     {
         return self::scan_for($t, $p, $ce);
     }
+
 
     /*
     |--------------------------------------------------------------------------
@@ -1952,6 +2065,59 @@ class Replica
         //get menu generator system
         return self::menu_generate($d);
     }
+
+
+    /*
+   |--------------------------------------------------------------------------
+   | Replica::hash()
+   |--------------------------------------------------------------------------
+   |
+   | Handle hashing and salting
+   |
+   */
+
+
+    /**
+     * @param $action
+     * @param array $param
+     * @return string
+     */
+    public static function hash($action, $param=[])
+    {
+        //Set the salt as optional parameter
+        $salt       = isset($param['salt']) ? $param['salt'] : "";
+
+        //If string parameter is not assigned, assign to empty to it doesn't cause error
+        $str        = isset($param['string']) ? $param['string'] : "";
+
+        //If the length is not defined in parameters array, set it to zero by default
+        $length     = isset($param['length']) ? $param['length'] : 0;
+
+        //switch through the action request
+        switch(strtolower($action))
+        {
+            //The request is to make hash
+            case self::get_system('hash_case_make'):
+
+                //make hash from string passed through the parameter
+                return hash('sha256',$str,$salt);
+
+            //The request is to make salt
+            case self::get_system('hash_case_salt'):
+
+                //Make a salt
+                return mcrypt_create_iv($length);
+
+            //The request is to make unique id
+            case self::get_system('hash_case_unique'):
+
+                //Make a hashed unique id
+                return self::hash('make',uniqid());
+        }
+
+        return false;
+    }
+
 
 
     /*
@@ -2752,6 +2918,13 @@ class Replica
                 'token_case_generate'               => 'generate',
                 'token_case_check'                  => 'check',
 
+                //Replica::hash();
+                '__RHA_MTH_DESC'                    => '',
+
+                'hash_case_make'                    => 'make',
+                'hash_case_salt'                    => 'salt',
+                'hash_case_unique'                  => 'unique',
+
                 #Replica::session()
 
                 "__RSES_MTH_DESC"                   => '',
@@ -2761,6 +2934,7 @@ class Replica
                 'session_case_exists'               => 'exists',
                 'session_case_delete'               => 'delete',
                 'session_case_destroy'              => 'destroy',
+                'session_name'                      => 'REPLICASESSIONID',
 
                 //Replica::simple_auth() // Replica::user() and all related helper methods to SimpleAuth
 
@@ -2837,10 +3011,6 @@ class Replica
 
 
 }
-
-
-//Start session
-session_start();
 
 //Instantiate the replica class
 $app = new Replica();

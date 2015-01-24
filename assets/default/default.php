@@ -8,6 +8,7 @@ Replica::inc_part('top','header',[
 ]);
 
 
+
 ?>
 
     <header>
@@ -43,4 +44,7 @@ Replica::inc_part('top','header',[
 
 
 
-<?php Replica::inc_part('footer','footer'); ?>
+<?php
+Replica::sitemap_generate();
+
+Replica::inc_part('footer','footer'); ?>
