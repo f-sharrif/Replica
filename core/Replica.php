@@ -48,7 +48,6 @@ class Replica
     | @var $_debug_bar => holds the debug bar contents to be displayed when debug mode =true
     |
     */
-
     private
 
         //Default page to load if no request is made
@@ -70,10 +69,8 @@ class Replica
         $_active_modules =[];
 
     private static
-
         //debug bar when debug mode is on
         $_debug_bar,
-
         //list of directories to exclude from scan dir result
         $_scan_dir_excludes =['.','..'];
 
@@ -89,8 +86,6 @@ class Replica
 
         //theme config file
         $theme_config= null;
-
-
     /*
     |--------------------------------------------------------------------------
     | Constructor method
@@ -139,8 +134,6 @@ class Replica
      */
     public function run()
     {
-
-
         #< START OF SYSTEM CONFIGURATION
 
         /*
@@ -193,13 +186,9 @@ class Replica
 
     }
 
-
-
-
     ############################################################################
     #               EXCLUSIVE REPLICA PRIVATE INTERNAL METHODS                 #
     ############################################################################
-
 
     /*
     |--------------------------------------------------------------------------
@@ -270,8 +259,6 @@ class Replica
 
         $ur =$this->_parse_uri_collections();
 
-
-
         //Check to see if we have at least one uri other than index is requested
         if(count($ur)>=1 && reset($ur)!="")
         {
@@ -338,8 +325,6 @@ class Replica
                 //Assign the page to the page
                 $this->_page = self::get_system('path_to_pages_dir').$request;
             }
-
-
 
             //Verify that the flag for page found is turned on and if not
             if(!$this->_request_exists && $request!='')
@@ -579,7 +564,7 @@ class Replica
         $file = new RecursiveIteratorIterator($dir, RecursiveIteratorIterator::SELF_FIRST);
 
         //Weed through the result and get only file with .php extension
-        $regex_match = new RegexIterator($file, '/^.+\.php$/i', RecursiveRegexIterator::GET_MATCH);
+        $regex_match = new RegexIterator($file, self::get_system('cached_pages_regex'), RecursiveRegexIterator::GET_MATCH);
 
         //Loop through the matched result
         foreach($regex_match as $page)
@@ -592,7 +577,7 @@ class Replica
                {
                    //$cache[self::hash('make',['string'=>$file])] =$file;
 
-                   $page_name = 'cached_page_'.self::hash('make',['string'=>$file]);
+                   $page_name = self::get_system('cached_pages_prefix').self::hash('make',['string'=>$file]);
 
                    self::session('put',['name'=>$page_name, 'value'=>$file]);
                }
@@ -602,7 +587,7 @@ class Replica
         }
 
         //Set the flag that this method has been run with timestamp
-        self::session('put',['name'=>'pages_cached_at', 'value'=>time()]);
+        self::session('put',['name'=>self::get_system('cached_pages_at'), 'value'=>time()]);
 
     }
 
@@ -624,7 +609,7 @@ class Replica
         $valid_list = [];
 
         //Test to see if the current cache has expired or not
-        if(self::session('get',['name'=>'pages_cached_at'])+100<time())
+        if(self::session('get',['name'=>self::get_system('cached_pages_at')])+self::get_system('cached_pages_expiry')<time())
         {
             //if the current cache expired, regenerate the cache
             $this->_generate_cached_pages();
@@ -634,7 +619,7 @@ class Replica
             foreach ($_SESSION as $k => $v)
             {
                 //only look for session key that starts with "cached_page_"
-                if (substr($k, 0, 12) == "cached_page_")
+                if (substr($k, 0, 12) == self::get_system("cached_pages_prefix"))
                 {
                     //Construct list of all the pages
                     $valid_list[$k] = $v;
@@ -773,12 +758,9 @@ class Replica
 
     }
 
-
     ############################################################################
     #               PROTECTED METHODS AVAILABLE INTERNALLY TO CHILD CLASSES    #
     ############################################################################
-
-
 
     /*
     |--------------------------------------------------------------------------
@@ -842,8 +824,6 @@ class Replica
         //remove white spaces and slashes from the beginning and end.
         return trim($var, "\x00..\x20/");
     }
-
-
 
     /*
     |--------------------------------------------------------------------------
@@ -917,7 +897,6 @@ class Replica
         return $this->get_theme_config($f);
     }
 
-
     ############################################################################
     #               PUBLICLY ACCESSIBLE OBJECT METHODS                         #
     ############################################################################
@@ -956,7 +935,6 @@ class Replica
         return true;
     }
 
-
     /**
      * @param $type
      * @param $message
@@ -990,8 +968,6 @@ class Replica
 
          return (self::printr(@sprintf("%s Error in file \xBB%s\xAB at line %d: %s\n", $name, @basename($file), $line, $message)));
     }
-
-
 
     /*
     |--------------------------------------------------------------------------
@@ -1057,7 +1033,6 @@ class Replica
 
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Magic Setter
@@ -1075,11 +1050,6 @@ class Replica
     {
         $this->_template_data[$k] = $v;
     }
-
-
-
-
-
 
     ############################################################################
     #               PUBLICLY ACCESSIBLE STATIC METHODS                         #
@@ -1156,8 +1126,6 @@ class Replica
         return self::_check_file($path);
     }
 
-
-
     /*
     |--------------------------------------------------------------------------
     | _is_dir($path)
@@ -1185,7 +1153,6 @@ class Replica
 
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Replica::parse_json()
@@ -1194,7 +1161,6 @@ class Replica
     | process json file
     |
     */
-
 
     /**
      * @param $path
@@ -1235,8 +1201,6 @@ class Replica
         return self::parse_json($p);
     }
 
-
-
     /*
     |--------------------------------------------------------------------------
     | scan_for_dirs($type, $path,$custom_excludes)
@@ -1249,7 +1213,6 @@ class Replica
     |  for its usefulness in and out of Replica class.
     |
     */
-
 
     /**
      * @param $type
@@ -1318,7 +1281,6 @@ class Replica
         return self::scan_for($t, $p, $ce);
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Replica::widget_load('nav','main');
@@ -1327,7 +1289,6 @@ class Replica
     | Get the replica nav and widgets
     |
     */
-
 
     /**
      * @param $type
@@ -1362,7 +1323,6 @@ class Replica
         //if there is nothing just return empty array that foreach doesn't return error
         return  [];
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -1476,7 +1436,6 @@ class Replica
         return self::redirect_to($l);
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Replica::include_partial('header')
@@ -1489,7 +1448,6 @@ class Replica
     | that will be used instead.
     |
     */
-
 
     /**
      * @param $type
@@ -1515,8 +1473,6 @@ class Replica
         {
             $default =null;
         }
-
-
 
         ###### START OF PAGE SPECIFIC EXTRA OPTIONS #######
         /*
@@ -1604,8 +1560,6 @@ class Replica
         return self::include_partial($t, $p, $pr);
     }
 
-
-
     /*
     |--------------------------------------------------------------------------
     | Replica::assets_get('css',[css/styles.css]);
@@ -1682,7 +1636,6 @@ class Replica
 
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Replica::al('t',[])
@@ -1690,8 +1643,6 @@ class Replica
     | Shorter alias for Replica::asset_load('type',[assets])
     |
     */
-
-
     /**
      * @param $t : type
      * @param array $a : assets
@@ -1702,8 +1653,6 @@ class Replica
         //assets load
         return self::assets_load($t, $a);
     }
-
-
 
     /*
     |--------------------------------------------------------------------------
@@ -1738,8 +1687,6 @@ class Replica
     {
         return self::get_base_uri();
     }
-
-
     /*
     |--------------------------------------------------------------------------
     | Replica::escape();
@@ -1775,7 +1722,6 @@ class Replica
         return self::escape($v);
     }
 
-
    /*
    |--------------------------------------------------------------------------
    | Replica::input_get($var);
@@ -1783,7 +1729,6 @@ class Replica
    | Gets the available variable from either post or get
    |
    */
-
 
     /**
      * @param $var
@@ -1817,7 +1762,6 @@ class Replica
    |
    */
 
-
     /**
      * @param $v
      * @return string
@@ -1827,7 +1771,6 @@ class Replica
         //return the input_get() method
         return self::input_get($v);
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -1867,10 +1810,6 @@ class Replica
         }
     }
 
-
-
-
-
     /*
     |--------------------------------------------------------------------------
     | Replica::dd($var) && Replica::printr()
@@ -1898,7 +1837,6 @@ class Replica
         echo "</pre></div> <!--Replica var_dump ends //-->";
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Replica::get_system('configuration')
@@ -1920,7 +1858,7 @@ class Replica
 
         if(count($request)) {
             //Test to see if the array key exists in the system configuration
-            while ($config = array_key_exists($request, self::__system_configuration_settings())) {
+            while ($config = array_key_exists($request,self::__system_configuration_settings())) {
                 //if the result of the test comes true
                 if ($config)
 
@@ -1929,7 +1867,7 @@ class Replica
             }
 
             //otherwise if the key doesn't exist than return an empty array.
-            return [];
+            return '';
 
         }else
         {
@@ -2101,7 +2039,6 @@ class Replica
         return false;
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Replica::mgen(array)
@@ -2121,7 +2058,6 @@ class Replica
         return self::menu_generate($d);
     }
 
-
     /*
    |--------------------------------------------------------------------------
    | Replica::hash()
@@ -2130,7 +2066,6 @@ class Replica
    | Handle hashing and salting
    |
    */
-
 
     /**
      * @param $action
@@ -2172,8 +2107,6 @@ class Replica
 
         return false;
     }
-
-
 
     /*
     |--------------------------------------------------------------------------
@@ -2217,7 +2150,6 @@ class Replica
         return false;
     }
 
-
     /*
     |--------------------------------------------------------------------------
     | Replica::tk('action', 'token');
@@ -2226,7 +2158,6 @@ class Replica
     | Alias to Replica::token();
     |
     */
-
 
     /**
      * @param $a : action
@@ -2238,7 +2169,6 @@ class Replica
         //return the token method
         return self::token($a, $t);
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -2403,10 +2333,6 @@ class Replica
         return false;
     }
 
-
-
-
-
     /*
     |--------------------------------------------------------------------------
     | Replica::simple_auth()
@@ -2499,7 +2425,6 @@ class Replica
     |
     */
 
-
     /**
      * @param $action
      * @param $data
@@ -2562,7 +2487,6 @@ class Replica
         //return false if no action is specified
         return false;
     }
-
 
     /*
     |--------------------------------------------------------------------------
@@ -2851,11 +2775,8 @@ class Replica
     {
         return
             [
-
                 #GLOBAL SYSTEM SETTINGS
-
                 //default configuration
-
                 'timezone'                      =>  self::_whitespace_slashes(REPLICA_DEFAULT_TIME_ZONE),
                 'debug_mode'                    =>  is_bool(REPLICA_DEBUG_MODE) ? REPLICA_DEBUG_MODE : false,
                 'ext'                           =>  '.'.self::_whitespace_slashes(EXT),
@@ -2883,7 +2804,7 @@ class Replica
                 //Version Information
                 'system'                        => [
 
-                    'name'                      =>  'Replica',
+                    'name'                      => 'Replica',
                     'state'                     =>  true,
                     'version'                   =>  0.01,
                     'release'                   => '12/08/2014',
@@ -2916,13 +2837,11 @@ class Replica
                 'path_to_email_templates'       => '',
 
                 //Data
-
                 'path_to_pages_dir'             => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_PAGES_DIR) . DS,
                 'path_to_nav_dir'               => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS. self::_whitespace_slashes(REPLICA_CUSTOM_DATA_NAV_DIR) . DS,
                 'path_to_widgets_dir'           => REPLICA_ROOT_DIR . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_DIR) . DS . self::_whitespace_slashes(REPLICA_CUSTOM_DATA_WIDGETS_DIR) . DS,
 
                 //Theme
-
                 'theme'                         => self::_whitespace_slashes(REPLICA_THEME),
                 'theme_partial'                 => self::_whitespace_slashes(REPLICA_THEME_PARTIAL_DIR),
                 'theme_index'                   => self::_whitespace_slashes(REPLICA_THEME_DEFAULT_INDEX).'.'.EXT,
@@ -2936,7 +2855,6 @@ class Replica
                 'theme_widgets'                 => self::_whitespace_slashes(REPLICA_THEME_WIDGETS_DIR),
 
                 //Default settings
-
                 'meta_title'                    => REPLICA_DEFAULT_SITE_NAME,
                 'meta_desc'                     => REPLICA_DEFAULT_SITE_DESCRIPTION,
                 'meta_tags'                     => REPLICA_DEFAULT_SITE_KEYWORDS,
@@ -2946,7 +2864,6 @@ class Replica
                 //$this->replica_exceptions_handler()
 
                 //status codes
-
                 'replica_exception_status_400'  => '400 Bad Request',
                 'replica_exception_status_401'  => '401 Unauthorized',
                 'replica_exception_status_403'  => '403 Forbidden',
@@ -2956,27 +2873,32 @@ class Replica
                 'replica_exception_status_504'  => '503 Service Unavailable',
 
                 //Universal Messages
-
-                'replica_exception_msg_400'     => '',
-                'replica_exception_msg_401'     => '',
-                'replica_exception_msg_403'     => 'Wooops! You, totally are forbidden from accessing <strong>%s</strong>. Sorry, it\'s true.',
-                'replica_exception_msg_404'     => 'Ooops! The page you\'re looking for <strong>%s</strong> is not found here!',
-                'replica_exception_msg_500'     => '',
-                'replica_exception_msg_502'     => '',
-                'replica_exception_msg_503'     => '',
+                'replica_exception_msg_400'             => '',
+                'replica_exception_msg_401'             => '',
+                'replica_exception_msg_403'             => 'Wooops! You, totally are forbidden from accessing <strong>%s</strong>. Sorry, it\'s true.',
+                'replica_exception_msg_404'             => 'Ooops! The page you\'re looking for <strong>%s</strong> is not found here!',
+                'replica_exception_msg_500'             => '',
+                'replica_exception_msg_502'             => '',
+                'replica_exception_msg_503'             => '',
 
                 #self::_include_file()
+                'include_file_no_syntax_error'      => "No syntax errors detected",
+                'include_file_throw_exception'      => "There is a syntax error with: <strong>%s</strong>.",
 
-                'include_file_no_syntax_error' => "No syntax errors detected",
-                'include_file_throw_exception' => "There is a syntax error with: <strong>%s</strong>.",
 
-                #Replica::send_email()
+                #self::_generate_cached_pages() && self::_fetch_cached_pages() as cached_pages
+                'cached_pages_prefix'               => 'cached_page_',
+                'cached_pages_regex'                => '/^.+\.php$/i',
+                'cached_pages_expiry'               => 100,
+                'cached_pages_at'                   => 'page_cached_at',
+
+                //Replica::send_email()
 
                 "__RSE_MTH_DESC"                    => '',
 
-                'send_email_default_address'        => 'test@replica.sharif.co',
-                'send_email_default_subject'        => 'Message from your Replica site',
-                'send_email_cc_address'             => 'cc.test@replica.sharif.co',
+                'send_email_default_address'        => self::get('send_email/address',$GLOBALS['config']),
+                'send_email_default_subject'        => self::get('send_email/subject',$GLOBALS['config']),
+                'send_email_cc_address'             => self::get('send_email/cc',$GLOBALS['config']),
 
                 'send_email_message_sent_success'   => "Thank you %s, your message has been successfully sent",
                 'sent_email_message_sent_failed'    => "Oh no, something went wrong, unable to sent your message",
@@ -3055,6 +2977,7 @@ class Replica
                 'session_case_destroy'              => 'destroy',
                 'session_name'                      => 'REPLICASESSIONID',
 
+
                 //Replica::simple_auth() // Replica::user() and all related helper methods to SimpleAuth
 
                 "__RSA_MTH_DESC"                    => '',
@@ -3120,39 +3043,37 @@ class Replica
 
                 'socialmedia'                          => [
                     'linkedin'                         => [
-                        'url'                          => self::get('linkedin/url',$GLOBALS['socialmedia']),
-                        'handle'                       => self::get('linkedin/handle', $GLOBALS['socialmedia']),
+                        'url'                          => self::get('linkedin/url',$GLOBALS['config']['socialmedia']),
+                        'handle'                       => self::get('linkedin/handle', $GLOBALS['config']['socialmedia']),
                     ],
                     'googleplus'                       => [
-                        'url'                          => self::get('googleplus/url',$GLOBALS['socialmedia']),
-                        'handle'                       => self::get('googleplus/handle',$GLOBALS['socialmedia']),
+                        'url'                          => self::get('googleplus/url',$GLOBALS['config']['socialmedia']),
+                        'handle'                       => self::get('googleplus/handle',$GLOBALS['config']['socialmedia']),
                     ],
                     'facebook'                         => [
-                        'url'                          => self::get('faacebook/url',$GLOBALS['socialmedia']),
-                        'handle'                       => self::get('faacebook/handle',$GLOBALS['socialmedia']),
+                        'url'                          => self::get('facebook/url',$GLOBALS['config']['socialmedia']),
+                        'handle'                       => self::get('facebook/handle',$GLOBALS['config']['socialmedia']),
                     ],
                     'twitter'                          => [
-                        'url'                          => self::get('twitter/url',$GLOBALS['socialmedia']),
-                        'handle'                       => self::get('twitter/handle',$GLOBALS['socialmedia']),
+                        'url'                          => self::get('twitter/url',$GLOBALS['config']['socialmedia']),
+                        'handle'                       => self::get('twitter/handle',$GLOBALS['config']['socialmedia']),
                     ],
                     'youtube'                          =>[
-                        'url'                          => self::get('youtube/url',$GLOBALS['socialmedia']),
-                        'handle'                       => self::get('youtube/handle',$GLOBALS['socialmedia']),
+                        'url'                          => self::get('youtube/url',$GLOBALS['config']['socialmedia']),
+                        'handle'                       => self::get('youtube/handle',$GLOBALS['config']['socialmedia']),
                     ],
                     'github'                           => [
-                        'url'                          => self::get('github/url',$GLOBALS['socialmedia']),
-                        'handle'                       => self::get('github/handle',$GLOBALS['socialmedia']),
+                        'url'                          => self::get('github/url',$GLOBALS['config']['socialmedia']),
+                        'handle'                       => self::get('github/handle',$GLOBALS['config']['socialmedia']),
                     ],
                     'skype'                            => [
-                        'url'                          => self::get('skype/url',$GLOBALS['socialmedia']),
-                        'handle'                       => self::get('skype/handle',$GLOBALS['socialmedia']),
+                        'url'                          => self::get('skype/url',$GLOBALS['config']['socialmedia']),
+                        'handle'                       => self::get('skype/handle',$GLOBALS['config']['socialmedia']),
                     ],
                 ],
 
-
-            ];
+            ]; //end of the configuration
     }
-
 
 }
 
