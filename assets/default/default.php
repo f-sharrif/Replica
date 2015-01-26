@@ -18,7 +18,19 @@ Replica::inc_part('top','header',[
             <li><a href="<?=$nav_url;?>"> <?=$nav_label;?></a></li>
 
             <?php endforeach; endif;?>
+
         </ul>
+
+        <nav>
+        <?php
+
+        echo Replica::menu_generate(Replica::widget_load('menu','dropdown-menu'),['parent_class'=>'dropdown-menu','child_class'=>'submenu','grandchild_class'=>'subsubmenu']);
+        ?>
+        </nav>
+
+
+
+
         <div class="site-image">
             <img src="<?=@$site_img;?>" alt="That would be I.">
         </div>
@@ -45,6 +57,6 @@ Replica::inc_part('top','header',[
 
 
 <?php
-Replica::sitemap_generate();
+
 
 Replica::inc_part('footer','footer'); ?>

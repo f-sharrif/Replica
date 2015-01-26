@@ -12,10 +12,13 @@ if($footer_widgets)
 <div class="text-center">
 <footer>
     <ul class="links inline">
-        <li><i class="fa fa-skype"></i> <a href="callto:sp01010011">SP01010011</a></li>
-        <li><i class="fa fa-twitter"></i> <a href="https://twitter.com/aqsharif" target="_blank">@aqsharif</a></li>
-        <li><i class="fa fa-github"></i> <a href="http://github.com/sp01010011" target="_blank">SP01010011</a></li>
-        <li><small> Powered by  <a href="<?=Replica::get_system('system_url')?>" target="_blank"><?=Replica::get_system('system_name');?> <?=Replica::get_system('system_version');?></a></small></li>
+        <li><i class="fa fa-skype"></i> <a href="callto:<?=Replica::get('socialmedia/skype/handle', Replica::conf());?>"><?=Replica::get('socialmedia/skype/handle', Replica::conf());?></a></li>
+
+        <li><i class="fa fa-twitter"></i> <a href="<?=Replica::get('socialmedia/twitter/url', Replica::conf());?>" target="_blank"><?=Replica::get('socialmedia/twitter/handle', Replica::conf());?></a></li>
+
+        <li><i class="fa fa-github"></i> <a href="<?=Replica::get('socialmedia/github/url', Replica::conf());?>" target="_blank"><?=Replica::get('socialmedia/github/handle', Replica::conf());?></a></li>
+
+        <li><small> Powered by  <a href="<?=Replica::get('system/url', Replica::conf());?>" target="_blank"><?=Replica::get('system/name',Replica::conf());?>  <?=Replica::get('system/version',Replica::conf());?></a></small></li>
 
     </ul>
 

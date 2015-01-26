@@ -163,7 +163,7 @@ class Replica
         */
 
         //If this Constant is not defined the system will not render pages, do not remove
-        if(!defined('REPLICA'))         define('REPLICA', self::get_system('system_state'));
+        if(!defined('REPLICA'))         define('REPLICA', self::get_system('system')['state']);
 
         /*
         |--------------------------------------------------------------------------
@@ -173,8 +173,10 @@ class Replica
         |
         */
 
-        $this->_debugger();
-
+        if(self::get_system('debug_mode'))
+        {
+            $this->_debugger();
+        }
 
 
         # END OF SYSTEM CONFIGURATION />
@@ -512,13 +514,13 @@ class Replica
                 echo "<h3 style='padding:2px; border-bottom: 1px solid #efefef; width:40%;'> About Replica </h3>";
                 echo "<pre>";
                 //Display current version
-                echo "Replica Version: ", self::get_system('system_version')."<br>";
+                echo "Replica Version: ", self::get_system('system')['version']."<br>";
 
                 //Display current version release date
-                echo "Release Date: ", self::get_system('system_release_date')."<br>";
+                echo "Release Date: ", self::get_system('system')['release']."<br>";
 
                 //Display the replica home url
-                echo "Support URL: <a href='".self::get_system('system_url')."'> ".self::get_system('system_url')."</a><br>";
+                echo "Support URL: <a href='".self::get_system('system')['url']."'> ".self::get_system('system')['url']."</a><br>";
 
                 echo "</pre>";
 
@@ -526,7 +528,7 @@ class Replica
                 echo"<h2 style='padding:2px; width:40%; border-bottom: 1px solid #efefef;'>Replica Configuration</h2>";
 
                 //Dump detailed system configuration
-                echo self::dd(self::_system_configuration_settings());
+                echo self::dd(self::__system_configuration_settings());
 
                 //end the pre tag for Replica config var_dump
                 echo "</pre>";
@@ -563,6 +565,7 @@ class Replica
     /**
      * @return $this
      */
+
     private function _generate_cached_pages()
     {
 
@@ -985,7 +988,7 @@ class Replica
             $name = 'E_UNKNOWN';
         }
 
-        return (print(@sprintf("%s Error in file \xBB%s\xAB at line %d: %s\n", $name, @basename($file), $line, $message)));
+         return (self::printr(@sprintf("%s Error in file \xBB%s\xAB at line %d: %s\n", $name, @basename($file), $line, $message)));
     }
 
 
@@ -1530,13 +1533,13 @@ class Replica
         $css     = isset($params['css']) ? $params['css'] : '';
 
         //Set Inline stylesheet to be embedded to each template partial as needed.
-        $style   = isset($params['style']) ? "<!--".self::get_system('system_name')." ".self::get_system('system_version')." assets  auto-dump: embedded cascading stylesheet //-->" .$params['style'] : '';
+        $style   = isset($params['style']) ? "<!--".self::get_system('system')['name']." ".self::get_system('system')['version']." assets  auto-dump: embedded cascading stylesheet //-->" .$params['style'] : '';
 
         //Set additional page specific external JS to be loaded via Replica::load_assets() to specific page as needed.
         $js     = isset($params['js']) ? $params ['js'] : '';
 
         //Set inline js to be embedded to each template partial as needed
-        $script = isset($params['script']) ? "<!--".self::get_system('system_name')." ".self::get_system('system_version')." assets  auto-dump: embedded JavaScript //-->" .$params['script'] : '';
+        $script = isset($params['script']) ? "<!--".self::get_system('system')['name']." ".self::get_system('system')['version']." assets  auto-dump: embedded JavaScript //-->" .$params['script'] : '';
 
         ###### END OF PAGE SPECIFIC EXTRA OPTIONS ########
 
@@ -1630,7 +1633,7 @@ class Replica
          */
 
         //Initialize @$auto_dumper variable to collect information
-        $auto_dumper="<!--".self::get_system('system_name')." ".self::get_system('system_version')." assets  auto-dump: {$type} //-->".PHP_EOL;
+        $auto_dumper="<!--".self::get_system('system')['name']." ".self::get_system('system')['version']." assets  auto-dump: {$type} //-->".PHP_EOL;
 
         //Check make sure there is at lease one request in the array before stating any work
         if(count($assets) >=1)
@@ -1870,9 +1873,9 @@ class Replica
 
     /*
     |--------------------------------------------------------------------------
-    | Replica::dd($var);
+    | Replica::dd($var) && Replica::printr()
     |--------------------------------------------------------------------------
-    | returns var dumps the detail on the var
+    | returns var_dump()  and print_r() detail on the var in a formatted way
     |
     */
 
@@ -1885,11 +1888,25 @@ class Replica
 
     }
 
+    /**
+     * @param $var
+     */
+    public static function printr($var)
+    {
+        echo "<!-- Replica var_dump  Starts //--><div><pre style='background-color: #e74c3c;background-image: -webkit-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:    -moz-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:     -ms-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:      -o-linear-gradient(#e74c3c 50%, #c0392b 50%);background-image:         linear-gradient(#e74c3c 50%, #c0392b 50%);background-position: 0 1px;background-repeat: repeat;background-size: 48px 48px;border-radius: 5px;color: #f6f6f6;line-height: 24px;padding: 24px; word-wrap: break-word'>";
+        print_r($var);
+        echo "</pre></div> <!--Replica var_dump ends //-->";
+    }
+
+
     /*
     |--------------------------------------------------------------------------
     | Replica::get_system('configuration')
     |--------------------------------------------------------------------------
     | Method to parse system configuration settings
+    |
+    | UPDATE: 01/26 - changed method from public to protected with addition of
+    | Replica::get() method.
     |
     */
 
@@ -1898,17 +1915,17 @@ class Replica
      * @param $request
      * @return array
      */
-    public static function get_system($request=[])
+    protected static function get_system($request=[])
     {
 
         if(count($request)) {
             //Test to see if the array key exists in the system configuration
-            while ($config = array_key_exists($request, self::_system_configuration_settings())) {
+            while ($config = array_key_exists($request, self::__system_configuration_settings())) {
                 //if the result of the test comes true
                 if ($config)
 
                     //return the value for that key
-                    return self::_system_configuration_settings()[$request];
+                    return self::__system_configuration_settings()[$request];
             }
 
             //otherwise if the key doesn't exist than return an empty array.
@@ -1917,7 +1934,7 @@ class Replica
         }else
         {
             //publicly access the entire system configuration setting at once.
-            return self::_system_configuration_settings();
+            return self::__system_configuration_settings();
         }
     }
 
@@ -1960,24 +1977,26 @@ class Replica
         //TODO: Finish implimenting navigation styling :: ON HOLD AS OF 01/24
         // Plan to remove and rewrite menu_generate from grounds up.
 
-        $options_nav_ul_id = isset($options['ul_id']) ? " id='".$options['ul_id']."'" :"";
+        $options_parent_id = isset($options['parent_id']) ? " id='".$options['parent_id']."'" :"";
 
-        $options_nav_ul_class =isset($options['ul_class']) ? " class='".$options['ul_class']."'" :"";
+        $options_parent_class =isset($options['parent_class']) ? " class='".$options['parent_class']."'" :"";
 
-        $options_nav_ul_li_active_class = isset($options['ul_li_active']) ? " class='".$options ['ul_li_active']."'"  :"";
+        $options_parent_active_class = isset($options['parent_li_active']) ? " class='".$options ['parent_li_active']."'"  :"";
 
-        $options_nav_ul_li_ul_class= isset($options['ul_li_ul_class']) ? " class='".$options['ul_li_ul_class']."'" : "";
+        $options_child_class= isset($options['child_class']) ? " class='".$options['child_class']."'" : "";
 
-        $options_nav_ul_li_ul_li_active_class= isset($options['ul_li_ul_li_active']) ? " class='".$options['ul_li_ul_li_active']."'" : "";
+        $options_child_active_class= isset($options['child_li_active']) ? " class='".$options['child_li_active']."'" : "";
 
         $options_nav_current_link = isset($options['current']) ? $options['current'] : "home";
+
+        $options_grandchild_class = isset($options['grandchild_class']) ? " class='".$options['grandchild_class']."'" : "";
 
         //Make sure there is at least one item in the array
         if(count($data)>=1)
         {
 
             //Initialize the nav var with ul
-            $nav ="<ul".$options_nav_ul_id.$options_nav_ul_class.">";
+            $nav ="<ul".$options_parent_id.$options_parent_class.">".PHP_EOL;
 
             //loop through the data
             foreach($data as $label=>$menu)
@@ -1988,7 +2007,7 @@ class Replica
                 {
 
                     //If it is not an array than it must just a link so add to link
-                    $nav.='<li><a href="'.$menu.'">'.$label.'</a></li>';
+                    $nav.='<li><a href="'.$menu.'">'.$label.'</a></li>'.PHP_EOL;
 
 
                     //double check what was not added to link list is array
@@ -2006,7 +2025,7 @@ class Replica
 
 
                     //Now prepare nav for sub ul ul>li>ul
-                    $nav.='<li><a href="'.$url.'">'.$label.'</a> <ul'.$options_nav_ul_li_ul_class.'>';
+                    $nav.='<li><a href="'.$url.'">'.$label.'</a>'.PHP_EOL.'<ul'.$options_child_class.'>';
 
                     //Loop through
                     foreach($menu as $clabel=>$cmenu)
@@ -2016,7 +2035,7 @@ class Replica
                         if(!is_array($cmenu))
                         {
                             //add to link collections
-                            $nav.='<li><a href="'.$cmenu.'">'.$clabel.'</a></li>';
+                            $nav.='<li><a href="'.$cmenu.'">'.$clabel.'</a></li>'.PHP_EOL;
 
 
                             //Verify again for the third label
@@ -2035,7 +2054,7 @@ class Replica
 
 
                             //initilize a collection sub ul ul>li>ul>li
-                            $nav.='<li><a href="'.$url.'">'.$clabel.'</a> <ul>';
+                            $nav.='<li><a href="'.$url.'">'.$clabel.'</a>'.PHP_EOL.'<ul'.$options_grandchild_class.'>'.PHP_EOL;
 
 
                             //loop through the gran children
@@ -2046,12 +2065,12 @@ class Replica
                                 {
 
                                     //Add to the collection
-                                    $nav.='<li><a href="'.$gmenu.'">'.$glabel.'</a></li>';
+                                    $nav.='<li><a href="'.$gmenu.'">'.$glabel.'</a></li>'.PHP_EOL;
                                 }
                             }
 
                             //Close the grand children
-                            $nav.="</ul></li>";
+                            $nav.="</ul></li>".PHP_EOL;
                         }
 
                         //Unset the grandchild
@@ -2064,7 +2083,7 @@ class Replica
                     }
 
                     //Close children
-                    $nav.="</ul></li>";
+                    $nav.="</ul></li>".PHP_EOL;
                 }
 
                 //unset the menu
@@ -2072,7 +2091,7 @@ class Replica
             }
 
             //Close parent
-            $nav.="</ul>";
+            $nav.="</ul>".PHP_EOL;
 
             //return the result
             return $nav;
@@ -2331,6 +2350,60 @@ class Replica
         //return self session method
         return self::session($a, $p);
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Replica::get()
+    |--------------------------------------------------------------------------
+    |
+    | Replica::get(), parses a string from array data
+    | @usage: Replica::get('mysql/host',$data)
+    |
+    */
+
+    /**
+     * @param null $path
+     * @param array $data
+     * @return array|bool
+     */
+    public static function get($path=null, $data=[])
+    {
+
+       //Check to see if both path and data is passed to the method
+        if($path && $data)
+        {
+
+            //Confirm there is data in data
+            if(count($data))
+            {
+
+                //explode the request path
+                $parts = explode('/',$path);
+
+               //loop through different part of the path
+                foreach($parts as $part)
+                {
+                    //get that part from data if exists
+                    if(isset($data[$part]))
+                    {
+                        $data = $data[$part];
+                    }else
+                    {
+                        //if part doesn't exist in the given data then terminate
+                        return false;
+                    }
+                }
+
+                //return the data
+                return $data;
+            }
+        }
+
+        //otherwise return false
+        return false;
+    }
+
+
 
 
 
@@ -2731,13 +2804,13 @@ class Replica
     public static function link_to_social_media($sm)
     {
         //Check to see if the requested social media exists
-        $social_media = self::get_system(strtolower($sm));
+       // $social_media =
 
         //If the social media is found
-        if(!empty($social_media))
+        if(!empty(self::get_system('socialmedia')[strtolower($sm)]))
         {
             //Redirect to that social media
-            self::redirect_to($social_media);
+            self::redirect_to(self::get_system('socialmedia')[strtolower($sm)]['url']);
             exit;
         }
 
@@ -2751,6 +2824,14 @@ class Replica
     #                   SYSTEM CONFIGURATION SETTINGS                          #
     ############################################################################
 
+    /**
+     * @return array
+     */
+    public static function conf()
+    {
+        //get list of all configuration
+        return self::__system_configuration_settings();
+    }
 
    /*
    |--------------------------------------------------------------------------
@@ -2766,7 +2847,7 @@ class Replica
     /**
      * @return array
      */
-    private static function _system_configuration_settings()
+    private static function __system_configuration_settings()
     {
         return
             [
@@ -2800,12 +2881,14 @@ class Replica
                 'full_name'                     => 'full_name',
 
                 //Version Information
+                'system'                        => [
 
-                'system_name'                   => 'Replica',
-                'system_state'                  =>  true,
-                'system_version'                =>  0.01,           //do not manually change this
-                'system_release_date'           =>  '12/08/2014',
-                'system_url'                    =>  'http://replica.hub.sharif.co',
+                    'name'                      =>  'Replica',
+                    'state'                     =>  true,
+                    'version'                   =>  0.01,
+                    'release'                   => '12/08/2014',
+                    'url'                       => 'http://replica.hub.sharif.co'
+                ],
 
                 #USER CUSTOMIZATION
 
@@ -3035,11 +3118,36 @@ class Replica
 
                 //Replica::link_to_social_media();
 
-                'in'                                    => 'https://www.linkedin.com/pub/abdikadir-a/33/975/542',
-                'g'                                     => 'http://google.com/plus',
-                'f'                                     => 'http://facebook.com/sharif',
-                't'                                     => 'http://twitter.com/sharif',
-                'p'                                     => 'http://pintrest.com/sharif',
+                'socialmedia'                          => [
+                    'linkedin'                         => [
+                        'url'                          => self::get('linkedin/url',$GLOBALS['socialmedia']),
+                        'handle'                       => self::get('linkedin/handle', $GLOBALS['socialmedia']),
+                    ],
+                    'googleplus'                       => [
+                        'url'                          => self::get('googleplus/url',$GLOBALS['socialmedia']),
+                        'handle'                       => self::get('googleplus/handle',$GLOBALS['socialmedia']),
+                    ],
+                    'facebook'                         => [
+                        'url'                          => self::get('faacebook/url',$GLOBALS['socialmedia']),
+                        'handle'                       => self::get('faacebook/handle',$GLOBALS['socialmedia']),
+                    ],
+                    'twitter'                          => [
+                        'url'                          => self::get('twitter/url',$GLOBALS['socialmedia']),
+                        'handle'                       => self::get('twitter/handle',$GLOBALS['socialmedia']),
+                    ],
+                    'youtube'                          =>[
+                        'url'                          => self::get('youtube/url',$GLOBALS['socialmedia']),
+                        'handle'                       => self::get('youtube/handle',$GLOBALS['socialmedia']),
+                    ],
+                    'github'                           => [
+                        'url'                          => self::get('github/url',$GLOBALS['socialmedia']),
+                        'handle'                       => self::get('github/handle',$GLOBALS['socialmedia']),
+                    ],
+                    'skype'                            => [
+                        'url'                          => self::get('skype/url',$GLOBALS['socialmedia']),
+                        'handle'                       => self::get('skype/handle',$GLOBALS['socialmedia']),
+                    ],
+                ],
 
 
             ];

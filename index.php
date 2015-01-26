@@ -51,6 +51,134 @@
 
     /*
     |--------------------------------------------------------------------------
+    | Social Media
+    |--------------------------------------------------------------------------
+    |
+    | Below are list of currently Replica supported social media sites. Please
+    | provide links and username to your social media profile.
+    | Please note, these names are also registered with Replica route and they cannot
+    | be used as link for internal pages. A visit to any of this names eg.
+    | http://yourreplicasite.com/github will automatically redirects to what ever you define
+    | as github url even if you have a page called http://yourreplicasite.com/github in
+    | Replica Pages, the redirect to social media will take the priority.
+    |
+    | If you must change this behavior, then the following methods need to be changed in
+    | replica class:
+    | Route();
+    | link_to_social_media();
+    |
+    | If you need assistance, please feel free to contact me at hello@sharif.co.
+    |
+    */
+
+    $GLOBALS['socialmedia']=[
+
+
+      /*
+      |---------------------------------------------
+      | Linkedin - http://linkedin.com
+      |----------------------------------------------
+      */
+        'linkedin'                         => [
+
+            //your linkedin public url
+            'url'                          => 'https://www.linkedin.com/pub/abdikadir-a/33/975/542',
+
+            //your linked full name
+            'handle'                       => 'linkedin',
+        ],
+
+        /*
+        |---------------------------------------------
+        | Google Plus - https://plus.google.com
+        |----------------------------------------------
+        */
+        'googleplus'                       => [
+
+            //Your google plus url
+            'url'                          => 'https://google.com/plus',
+
+            //Your google username
+            'handle'                       => '@sharif',
+        ],
+
+        /*
+        |---------------------------------------------
+        | Facebook - http://facebook.com
+        |----------------------------------------------
+        */
+
+        'facebook'                         => [
+
+            //Your facebook url
+            'url'                          => 'https://facebook.com/sharif',
+
+            //your facebook display name
+            'handle'                       => 'Sharif',
+        ],
+
+        /*
+        |---------------------------------------------
+        | Twitter - http://twitter.com
+        |----------------------------------------------
+        */
+
+        'twitter'                          => [
+
+            //Your twiter url
+            'url'                          => 'https://twitter.com/asharif',
+
+            //your twitter handle
+            'handle'                       => '@sharif1',
+        ],
+
+        /*
+        |---------------------------------------------
+        | Youtube - http://youtube.com
+        |----------------------------------------------
+        */
+        'youtube'                          =>[
+
+            //Your youtube channel url
+            'url'                          => 'http://yout.be/user/sharif',
+
+            //your youtube channel name
+            'handle'                       => 'sharif',
+        ],
+
+        /*
+       |---------------------------------------------
+       | GitHub - http://github.com
+       |----------------------------------------------
+       */
+        'github'                           => [
+
+            //your github url
+            'url'                          => 'https://github.com/sp01010011',
+
+            //your github username
+            'handle'                       => 'SP01010011',
+        ],
+
+        /*
+        |---------------------------------------------
+        | Skype - http://skype.com
+        |----------------------------------------------
+        */
+        'skype'                            => [
+
+            //your skype public profile url
+            'url'                          => 'skype',
+
+            //your skype username
+            'handle'                       => 'SP01010011'
+        ],
+    ];
+
+
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Time Zone
     |--------------------------------------------------------------------------
     |
