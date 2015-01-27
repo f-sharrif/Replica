@@ -50,8 +50,17 @@ define('REPLICA_DEFAULT_SITE_DESCRIPTION', 'Replica allows designers and develop
 define('REPLICA_DEFAULT_SITE_KEYWORDS', 'Replica PHP, PHP Templating Engine, PHP Micro Sites');
 
 
+/*
+|--------------------------------------------------------------------------
+| Basic Configuration
+|--------------------------------------------------------------------------
+|
+| Configure your basic system settings.
+|
+*/
+
 //GLOBAL CONFIGURATION
-$GLOBALS['config'] = [
+$GLOBALS['config'] = [   // <!==DO NOT REMOVE OR RENAME THIS FROM $GLOBALS['config']==/>
 
     /*
     |--------------------------------------------------------------------------
@@ -62,17 +71,18 @@ $GLOBALS['config'] = [
     | endusers to send email from your application, to enable this feature
     | of Replica, you must provide the below essential configurations
     |
+    | Replica::send_email();
     |
     */
     'send_email' =>[
 
-        //Your email address where you want your emails sent to
+        // ***REQUIRED*** email address where you want your emails sent to
         'address'   => 'hello@sharif.co',
 
-        //Your secondary email where you want a copy of the email sent to
+        //***OPTIONAL*** secondary email where you want a copy of the email sent to
         'cc'        => 'support@replica.hub.sharif.co',
-
-        //The subject for your email
+        
+        //***REQUIRED*** The subject for your email
         'subject'   => 'A new message from your Replica powered website'
     ],
 
@@ -104,14 +114,12 @@ $GLOBALS['config'] = [
         | Linkedin - http://linkedin.com
         |----------------------------------------------
         */
-        'linkedin' =>
-            [
+        'linkedin' =>[
                 //your linkedin public url
                 'url' => 'https://www.linkedin.com/pub/abdikadir-a/33/975/542',
                 //your linked full name
                 'handle' => 'linkedin',
             ],
-
         /*
         |---------------------------------------------
         | Google Plus - https://plus.google.com
@@ -122,7 +130,7 @@ $GLOBALS['config'] = [
             'url' => 'https://google.com/plus',
             //Your google username
             'handle' => '@sharif',
-        ],
+            ],
         /*
         |---------------------------------------------
         | Facebook - http://facebook.com
@@ -133,7 +141,7 @@ $GLOBALS['config'] = [
             'url' => 'https://facebook.com/sharif',
             //your facebook display name
             'handle' => 'Sharif',
-        ],
+            ],
         /*
         |---------------------------------------------
         | Twitter - http://twitter.com
@@ -144,7 +152,7 @@ $GLOBALS['config'] = [
             'url' => 'https://twitter.com/asharif',
             //your twitter handle
             'handle' => '@sharif1',
-        ],
+            ],
         /*
         |---------------------------------------------
         | Youtube - http://youtube.com
@@ -152,12 +160,11 @@ $GLOBALS['config'] = [
         */
         'youtube' => [
             //Your youtube channel url
-            'url' => 'http://yout.be/user/sharif',
+            'url' => 'http://youtube.com/user/sharif',
             //your youtube channel name
             'handle' => 'sharif',
-        ],
-
-        /*
+            ],
+       /*
        |---------------------------------------------
        | GitHub - http://github.com
        |----------------------------------------------
@@ -178,9 +185,12 @@ $GLOBALS['config'] = [
             'url' => 'skype',
             //your skype username
             'handle' => 'SP01010011'
-        ],
+            ],
     ] // end of social media configuration
-];
+
+
+
+]; //END OF GLOBALS CONFIGURATION
 
 
 /*
