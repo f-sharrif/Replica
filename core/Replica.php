@@ -110,13 +110,13 @@ class Replica
         register_shutdown_function([$this,'replica_shutdown_handler']);
 
         //set custom php session name instead of default PHPSESSIONID
-        session_name(Replica::get_system('session_name'));
+        session_name(self::get_system('session_name'));
 
         //Start session only it hasn't been started already
         if(session_status()== PHP_SESSION_NONE) {session_start();}
 
         //If the pages hasn't been cached already, then generate new cache
-        if(!self::session('exists',['name'=>'pages_cached_at'])){ $this->_generate_cached_pages(); }
+        if(!self::session('exists',['name'=>self::get_system('cached_pages_at')])){ $this->_generate_cached_pages(); }
 
     }
 
@@ -609,7 +609,7 @@ class Replica
         $valid_list = [];
 
         //Test to see if the current cache has expired or not
-        if(self::session('get',['name'=>self::get_system('cached_pages_at')])+self::get_system('cached_pages_expiry')<time())
+        if(self::session('get',['name'=>self::get_system('cached_pages_at')])+self::get_system('cached_pages_expiry')>time())
         {
             //if the current cache expired, regenerate the cache
             $this->_generate_cached_pages();

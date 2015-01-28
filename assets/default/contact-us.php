@@ -80,27 +80,27 @@ if(Replica::input_exists())
         <p>
         <p class="error" id="fname-error"></p>
             <label>First Name:</label>
-            <input type="text" value="<?=Replica::input_get(Replica::get_system('send_email_contact_firstname'));?>" id="<?=Replica::get_system('send_email_contact_firstname');?>" name="<?=Replica::get_system('send_email_contact_firstname');?>">
+            <input type="text" value="<?=Replica::input_get(Replica::get('send_email_contact_firstname', Replica::conf()));?>" id="<?=Replica::get('send_email_contact_firstname', Replica::conf());?>" name="<?=Replica::get('send_email_contact_firstname', Replica::conf());?>">
         </p>
 
         <p>
         <p class="error" id="lname-error"></p>
             <label>Last Name:</label>
-            <input type="text" value="<?=Replica::input_get(Replica::get_system('send_email_contact_lastname'));?>" id="<?=Replica::get_system('send_email_contact_lastname');?>" name="<?=Replica::get_system('send_email_contact_lastname');?>">
+            <input type="text" value="<?=Replica::input_get(Replica::get('send_email_contact_lastname', Replica::conf()));?>" id="<?=Replica::get('send_email_contact_lastname', Replica::conf());?>" name="<?=Replica::get('send_email_contact_lastname', Replica::conf());?>">
         </p>
 
         <p>
 
         <p class="error" id="email-error"></p>
             <label>Email Address:</label>
-            <input type="text" value="<?=Replica::input_get(Replica::get_system('send_email_contact_email'));?>" id="<?=Replica::get_system('send_email_contact_email');?>" name="<?=Replica::get_system('send_email_contact_email');?>">
+            <input type="text" value="<?=Replica::input_get(Replica::get('send_email_contact_email',Replica::conf()));?>" id="<?=Replica::get('send_email_contact_email', Replica::conf());?>" name="<?=Replica::get('send_email_contact_email', Replica::conf());?>">
         </p>
 
 
         <p>
             <p class="error" id="message-error"></p>
             <label>Message:</label>
-            <textarea id="<?=Replica::get_system('send_email_contact_message');?>" name="<?=Replica::get_system('send_email_contact_message');?>"><?=Replica::input_get(Replica::get_system('send_email_contact_message'));?></textarea>
+            <textarea id="<?=Replica::get('send_email_contact_message', Replica::conf());?>" name="<?=Replica::get('send_email_contact_message', Replica::conf());?>"><?=Replica::input_get(Replica::get('send_email_contact_message', Replica::conf()));?></textarea>
         </p>
 
         <input type="hidden" name="token" value="<?=Replica::token('generate');?>">

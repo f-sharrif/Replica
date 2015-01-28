@@ -112,7 +112,7 @@ $GLOBALS['config'] = [   // <!==DO NOT REMOVE OR RENAME THIS FROM $GLOBALS['conf
         /*
         |---------------------------------------------
         | Linkedin - http://linkedin.com
-        |----------------------------------------------
+        |---------------------------------------------
         */
         'linkedin' =>[
                 //your linkedin public url
@@ -123,7 +123,7 @@ $GLOBALS['config'] = [   // <!==DO NOT REMOVE OR RENAME THIS FROM $GLOBALS['conf
         /*
         |---------------------------------------------
         | Google Plus - https://plus.google.com
-        |----------------------------------------------
+        |---------------------------------------------
         */
         'googleplus' => [
             //Your google plus url
@@ -134,61 +134,59 @@ $GLOBALS['config'] = [   // <!==DO NOT REMOVE OR RENAME THIS FROM $GLOBALS['conf
         /*
         |---------------------------------------------
         | Facebook - http://facebook.com
-        |----------------------------------------------
+        |---------------------------------------------
         */
         'facebook' => [
-            //Your facebook url
+            #facebook profile link
             'url' => 'https://facebook.com/sharif',
-            //your facebook display name
+            #facebook display name
             'handle' => 'Sharif',
             ],
         /*
         |---------------------------------------------
         | Twitter - http://twitter.com
-        |----------------------------------------------
+        |---------------------------------------------
         */
         'twitter' => [
-            //Your twiter url
+            #twitter link
             'url' => 'https://twitter.com/asharif',
-            //your twitter handle
+            #twitter handle
             'handle' => '@sharif1',
             ],
         /*
         |---------------------------------------------
         | Youtube - http://youtube.com
-        |----------------------------------------------
+        |---------------------------------------------
         */
         'youtube' => [
-            //Your youtube channel url
+            #YouTube channel url
             'url' => 'http://youtube.com/user/sharif',
-            //your youtube channel name
+            #YouTube channel name
             'handle' => 'sharif',
             ],
        /*
        |---------------------------------------------
        | GitHub - http://github.com
-       |----------------------------------------------
+       |---------------------------------------------
        */
         'github' => [
-            //your github url
+            #GitHub profile url
             'url' => 'https://github.com/sp01010011',
-            //your github username
+            #GitHub username
             'handle' => 'SP01010011',
         ],
         /*
         |---------------------------------------------
         | Skype - http://skype.com
-        |----------------------------------------------
+        |---------------------------------------------
         */
         'skype' => [
-            //your skype public profile url
+            #Skype public profile link
             'url' => 'skype',
-            //your skype username
+            #Skype username
             'handle' => 'SP01010011'
             ],
     ] // end of social media configuration
-
-
 
 ]; //END OF GLOBALS CONFIGURATION
 

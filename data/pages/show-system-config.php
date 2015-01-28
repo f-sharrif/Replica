@@ -1,11 +1,12 @@
 <?php
 
-if(Replica::get_system('debug_mode')) {
+if(Replica::get('debug_mode',Replica::conf()))
+{
 
     return
         [
             'title' => 'Show system configuration',
-            'config' => array_merge(Replica::get_system(), get_defined_constants(true)['user']),
+            'config' => array_merge(Replica::conf(), get_defined_constants(true)['user']),
             'template' => 'system/show-system-config'
         ];
 }else

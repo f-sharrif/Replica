@@ -86,4 +86,4 @@ Replica::inc_part('top','header',[
 </table>
 
  </div>
-<?php Replica::inc_part('footer','footer'); ?>
+<?php Replica::inc_part('footer','footer',['footer-widgets'=>false]); ?>

@@ -10,7 +10,7 @@ class admin extends  Replica
     public function __construct()
     {
 
-    throw new Exception("The administration module cannot be used", 500);
+    throw new Exception("The administration module cannot be accessed at this time", 500);
 
     }
 
